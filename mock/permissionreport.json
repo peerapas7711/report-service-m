@@ -1,0 +1,99 @@
+{
+  "report": {
+    "title": {
+      "th": "รายงานกำหนดสิทธิการใช้ระบบ",
+      "en": "System Access Permission Report",
+      "my": "စနစ်အသုံးပြုခွင့် အစီရင်ခံစာ"
+    },
+    "company": {
+      "code": "9999",
+      "name": {
+        "th": "ไทเกอร์ซอฟต์",
+        "en": "TigerSoft Co., Ltd.",
+        "my": "တိုက်ဂါးဆော့ဖ် ကုမ္ပဏီ"
+      }
+    },
+    "group": {
+      "code": "TimeMobile",
+      "name": {
+        "th": "TimeMobile",
+        "en": "TimeMobile",
+        "my": "TimeMobile"
+      }
+    },
+    "menus": [
+      {
+        "code": "M01",
+        "name": {
+          "th": "ลา",
+          "en": "Leave",
+          "my": "ခွင့်"
+        },
+        "view": true
+      },
+      {
+        "code": "M02",
+        "name": {
+          "th": "อนุมัติลา",
+          "en": "Approve Leave",
+          "my": "ခွင့်အတည်ပြုခြင်း"
+        },
+        "view": false
+      },
+      {
+        "code": "M03",
+        "name": {
+          "th": "ทำงานล่วงเวลา",
+          "en": "Overtime",
+          "my": "အချိန်ပိုအလုပ်"
+        },
+        "view": true
+      },
+      {
+        "code": "M04",
+        "name": {
+          "th": "อนุมัติล่วงเวลา",
+          "en": "Approve Overtime",
+          "my": "အချိန်ပို အတည်ပြုခြင်း"
+        },
+        "view": false
+      },
+      {
+        "code": "M05",
+        "name": {
+          "th": "บันทึกเวลาเข้างาน",
+          "en": "Check-in",
+          "my": "ဝင်ချိန် မှတ်တမ်းတင်ခြင်း"
+        },
+        "view": true
+      },
+      {
+        "code": "M06",
+        "name": {
+          "th": "อนุมัติเวลาเข้างาน",
+          "en": "Approve Attendance",
+          "my": "ဝင်ချိန် အတည်ပြုခြင်း"
+        },
+        "view": false
+      },
+      {
+        "code": "M47",
+        "name": {
+          "th": "ประวัติพนักงาน",
+          "en": "Employee Profile",
+          "my": "ဝန်ထမ်း အချက်အလက်"
+        },
+        "view": true
+      },
+      {
+        "code": "M48",
+        "name": {
+          "th": "Advance Payroll",
+          "en": "Advance Payroll",
+          "my": "ကြိုတင်လစာ"
+        },
+        "view": false
+      }
+    ]
+  }
+}

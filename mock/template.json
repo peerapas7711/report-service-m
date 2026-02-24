@@ -1,0 +1,8 @@
+{
+  "title": "รายงานพนักงาน",
+  "sections": [
+    { "type": "kv", "label": "ชื่อ-สกุล", "key": "employee.profile.name" },
+    { "type": "kv", "label": "ตำแหน่ง", "key": "employee.profile.position" },
+    { "type": "kv", "label": "หมายเหตุ", "key": "employee.note" }
+  ]
+}

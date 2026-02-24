@@ -1,0 +1,22 @@
+.DS_Store
+
+# Go build/test artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+
+# Local caches
+.gocache/
+
+# Local temp files
+tmp/
+tempCodeRunnerFile*
+
+# Editors
+.idea/
+.vscode/
