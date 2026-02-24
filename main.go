@@ -135,12 +135,13 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/preview/system-access", func(c *fiber.Ctx) error {
-		orientationStr := c.Query("orientation", "P") // ?orientation=P|L
-		lang := c.Query("lang", "th")                 // ?lang=th|en|my
+		// orientationStr := c.Query("orientation", "P") // ?orientation=P|L
+		lang := c.Query("lang", "th") // ?lang=th|en|my
 
 		data := systemaccesspermission.MustSystemAccessFromFile("mock/permissionreport.json")
 
-		pdfBytes, err := systemaccesspermission.SystemAccessPermission(data, orientationStr, lang)
+		// pdfBytes, err := systemaccesspermission.SystemAccessPermission(data, orientationStr, lang)
+		pdfBytes, err := systemaccesspermission.SystemAccessPermissionXLSX(data, lang)
 		if err != nil {
 			return c.Status(500).SendString(err.Error())
 		}
@@ -148,8 +149,13 @@ func main() {
 		c.Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 		c.Set("Pragma", "no-cache")
 
-		c.Set("Content-Type", "application/pdf")
-		c.Set("Content-Disposition", "inline; filename=preview.pdf")
+		//todo ส่งเป็น PDF ให้เปิดใน browser
+		// c.Set("Content-Type", "application/pdf")
+		// c.Set("Content-Disposition", "inline; filename=preview.pdf")
+
+		//todo เปลี่ยนเป็น Excel
+		c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		c.Set("Content-Disposition", "inline; filename=preview.xlsx")
 
 		return c.Send(pdfBytes)
 	})
@@ -157,6 +163,11 @@ func main() {
 	addr := ":8080"
 	log.Println("Preview server listening on", addr)
 	log.Fatal(app.Listen(addr))
+
+	// ? Excelize ----------------
+	// f := excelize.NewFile()
+	// f.SetCellValue("Sheet1", "A1", "Hello Excel")
+	// _ = f.SaveAs("report.xlsx")
 
 }
 func mustInt(s string, def int) int {
