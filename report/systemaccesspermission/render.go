@@ -3,9 +3,11 @@ package systemaccesspermission
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"report-service-m/report/fontmanager"
+	"time"
 
 	"github.com/jung-kurt/gofpdf"
 )
@@ -14,6 +16,29 @@ func SystemAccessPermission(data SystemAccess, orientationStr, lang string) ([]b
 	orientation := normalizeOrientation(orientationStr)
 	pdf := gofpdf.New(orientation, "mm", "A4", "")
 	pdf.SetMargins(15, 15, 15)
+
+	pdf.SetAutoPageBreak(true, 15)
+	pdf.AliasNbPages("")
+
+	// เก็บเวลาไว้ครั้งเดียว (ไม่ให้เปลี่ยนทุกหน้า)
+	generatedAt := time.Now().Format("02/Jan/2006 15:04:05")
+
+	pdf.SetFooterFunc(func() {
+		pdf.SetY(-12)
+		fontmanager.Set(pdf, lang, "", 9)
+
+		pageW, _ := pdf.GetPageSize()
+		left, _, right, _ := pdf.GetMargins()
+		contentW := pageW - left - right
+
+		page := fmt.Sprintf("%d/{nb}", pdf.PageNo())
+
+		// รวมเป็นข้อความเดียว
+		text := fmt.Sprintf("%s    %s", generatedAt, page)
+
+		pdf.SetX(left)
+		pdf.CellFormat(contentW, 6, text, "", 0, "R", false, 0, "")
+	})
 
 	if err := fontmanager.LoadAll(pdf); err != nil {
 		return nil, err
