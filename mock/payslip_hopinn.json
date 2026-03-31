@@ -1,0 +1,122 @@
+{
+  "report": {
+    "company": {
+      "name": "Hop Inn Hotel Public Company Limited",
+      "logo": "https://jobbkk.com/upload/employer/09/ED9/03AED9/images/241369.jpg"
+    },
+    "document": {
+      "title": "PAY SLIP",
+      "confidential_title": "PRIVATE & CONFIDENTIAL",
+      "confidential_subtitle": "(TO BE OPENED BY ADDRESSEE ONLY)"
+    },
+    "payroll": {
+      "period": "16/2026 : February - Center",
+      "pay_date": "27/02/2026",
+      "slip_no": "1"
+    },
+    "employee": {
+      "name": "Suda Chaiyasit",
+      "emp_id": "HOP-240117",
+      "joined_date": "01/10/2024",
+      "division": "Operations",
+      "department": "Hotel Front Office",
+      "section": "Center",
+      "position": "Guest Service Agent",
+      "tax_id": "1103700123456"
+    },
+    "accumulations": [
+      {
+        "label": "Y-T-D Income",
+        "value": "245,000.00"
+      },
+      {
+        "label": "Y-T-D Tax",
+        "value": "7,900.00"
+      },
+      {
+        "label": "Y-T-D Social Security",
+        "value": "3,750.00"
+      },
+      {
+        "label": "Y-T-D Provident Fund",
+        "value": "8,400.00"
+      },
+      {
+        "label": "L-T-D Provident Fund",
+        "value": "12,800.00"
+      },
+      {
+        "label": "L-T-D Special Fund",
+        "value": "0.00"
+      },
+      {
+        "label": "L-T-D Special Fund2",
+        "value": "0.00"
+      }
+    ],
+    "earnings": [
+      {
+        "label": "Salary",
+        "value": "30,000.00"
+      },
+      {
+        "label": "Service Charge",
+        "value": "2,450.00"
+      },
+      {
+        "label": "Meal Allowance",
+        "value": "1,200.00"
+      }
+    ],
+    "deductions": [
+      {
+        "label": "W/H Tax",
+        "value": "420.00"
+      },
+      {
+        "label": "Social Security",
+        "value": "750.00"
+      },
+      {
+        "label": "Provident Fund",
+        "value": "900.00"
+      }
+    ],
+    "work_stats": [
+      {
+        "label": "Works",
+        "value": "30:00:00"
+      },
+      {
+        "label": "Absent",
+        "value": "00:00:00"
+      },
+      {
+        "label": "Late/Early",
+        "value": "00:30:00"
+      },
+      {
+        "label": "OT 1",
+        "value": "06:00"
+      },
+      {
+        "label": "OT 1.5",
+        "value": "04:00"
+      },
+      {
+        "label": "OT 2",
+        "value": "00:00"
+      },
+      {
+        "label": "OT 3",
+        "value": "00:00"
+      }
+    ],
+    "totals": {
+      "total_income": "33,650.00",
+      "total_deduct": "2,070.00",
+      "net_pay": "31,580.00",
+      "bank_account_no": "123-4-56789-0"
+    }
+  }
+}

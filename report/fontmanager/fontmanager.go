@@ -2,6 +2,9 @@ package fontmanager
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 
 	"github.com/jung-kurt/gofpdf"
 )
@@ -39,8 +42,9 @@ func LoadAll(pdf *gofpdf.Fpdf) error {
 	}
 
 	for _, f := range fonts {
-		if _, err := os.Stat(f.path); err == nil {
-			pdf.AddUTF8Font(f.name, f.style, f.path)
+		fontPath := resolveFontPath(f.path)
+		if fontBytes, err := os.ReadFile(fontPath); err == nil {
+			pdf.AddUTF8FontFromBytes(f.name, f.style, fontBytes)
 			if !pdf.Ok() {
 				return pdf.Error()
 			}
@@ -60,11 +64,11 @@ func Set(pdf *gofpdf.Fpdf, lang, style string, size float64) {
 		font = FontEN
 	}
 
-	// fallback style ถ้าไม่มี (กัน Myanmar Italic พัง)
-	if style != "" {
-		if !pdf.Ok() {
-			style = ""
-		}
+	style = normalizeStyle(lang, style)
+
+	if style == "" {
+		pdf.SetFont(font, "", size)
+		return
 	}
 
 	pdf.SetFont(font, style, size)
@@ -73,4 +77,67 @@ func Set(pdf *gofpdf.Fpdf, lang, style string, size float64) {
 	if !pdf.Ok() {
 		pdf.SetFont(font, "", size)
 	}
+}
+
+func resolveFontPath(path string) string {
+	if _, err := os.Stat(path); err == nil {
+		return path
+	}
+
+	if wd, err := os.Getwd(); err == nil {
+		if root := findProjectRoot(wd); root != "" {
+			candidate := filepath.Join(root, path)
+			if _, err := os.Stat(candidate); err == nil {
+				return candidate
+			}
+		}
+	}
+
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		return path
+	}
+
+	if !filepath.IsAbs(currentFile) {
+		if absCurrent, err := filepath.Abs(currentFile); err == nil {
+			currentFile = absCurrent
+		}
+	}
+
+	if root := findProjectRoot(filepath.Dir(currentFile)); root != "" {
+		candidate := filepath.Join(root, path)
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+
+	return path
+}
+
+func findProjectRoot(start string) string {
+	dir := filepath.Clean(start)
+
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return ""
+		}
+		dir = parent
+	}
+}
+
+func normalizeStyle(lang, style string) string {
+	if style == "" {
+		return ""
+	}
+
+	if lang == "th" || lang == "my" {
+		style = strings.ReplaceAll(style, "I", "")
+	}
+
+	return style
 }

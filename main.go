@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"report-service-m/report"
+	"report-service-m/report/payslip"
 	"report-service-m/report/systemaccesspermission"
 
 	"github.com/chromedp/cdproto/dom"
@@ -154,6 +155,43 @@ func main() {
 		return c.Send(pdfBytes)
 	})
 
+	app.Get("/preview/payslip", func(c *fiber.Ctx) error {
+		mockName := strings.TrimSpace(c.Query("mock", "hopinn"))
+		mockPath, ok := resolvePayslipMockPath(mockName)
+		if !ok {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"error":           "unknown payslip mock",
+				"available_mocks": []string{"hopinn", "tigersoft", "bluewave", "1", "2", "3"},
+			})
+		}
+
+		data := payslip.MustPayslipFromFile(mockPath)
+
+		if companyName := strings.TrimSpace(c.Query("company_name")); companyName != "" {
+			data.Report.Company.Name = companyName
+		}
+
+		logoURL := strings.TrimSpace(c.Query("logo"))
+		if logoURL == "" {
+			logoURL = strings.TrimSpace(c.Query("logo_url"))
+		}
+		if logoURL != "" {
+			data.Report.Company.Logo = logoURL
+		}
+
+		pdfBytes, err := payslip.Render(data, c.Query("orientation", "P"))
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		}
+
+		c.Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		c.Set("Pragma", "no-cache")
+		c.Set("Content-Type", "application/pdf")
+		c.Set("Content-Disposition", "inline; filename=payslip_preview.pdf")
+
+		return c.Send(pdfBytes)
+	})
+
 	addr := ":8080"
 	log.Println("Preview server listening on", addr)
 	log.Fatal(app.Listen(addr))
@@ -168,6 +206,19 @@ func mustInt(s string, def int) int {
 		return def
 	}
 	return n
+}
+
+func resolvePayslipMockPath(name string) (string, bool) {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "", "1", "hopinn":
+		return "mock/payslip_hopinn.json", true
+	case "2", "tigersoft":
+		return "mock/payslip_tigersoft.json", true
+	case "3", "bluewave":
+		return "mock/payslip_bluewave.json", true
+	default:
+		return "", false
+	}
 }
 
 // อ่านไฟล์ + Unmarshal
