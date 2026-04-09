@@ -13,6 +13,7 @@ import (
 
 	"report-service-m/report"
 	"report-service-m/report/payslip"
+	"report-service-m/report/queueticket"
 	"report-service-m/report/systemaccesspermission"
 
 	"github.com/chromedp/cdproto/dom"
@@ -192,6 +193,47 @@ func main() {
 		return c.Send(pdfBytes)
 	})
 
+	app.Get("/preview/queue-ticket", func(c *fiber.Ctx) error {
+		start := mustInt(c.Query("start"), 1)
+		total := mustInt(c.Query("total"), 700)
+		if total <= 0 {
+			total = 700
+		}
+
+		pdfBytes, err := queueticket.Render(queueticket.Options{
+			Title:      strings.TrimSpace(c.Query("title", "บัตรคิว")),
+			Subtitle:   strings.TrimSpace(c.Query("subtitle", "Queue Ticket")),
+			QueueLabel: strings.TrimSpace(c.Query("label", "หมายเลขคิว")),
+			Prefix:     strings.TrimSpace(c.Query("prefix")),
+			Lang:       strings.TrimSpace(c.Query("lang", "th")),
+			Start:      start,
+			Total:      total,
+			Digits:     mustInt(c.Query("digits"), 0),
+			Now:        time.Now(),
+		})
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		}
+
+		disposition := "inline"
+		if isTruthy(c.Query("download")) {
+			disposition = "attachment"
+		}
+
+		filename := fmt.Sprintf(
+			"queue_tickets_%04d_%04d.pdf",
+			start,
+			start+total-1,
+		)
+
+		c.Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		c.Set("Pragma", "no-cache")
+		c.Set("Content-Type", "application/pdf")
+		c.Set("Content-Disposition", fmt.Sprintf(`%s; filename="%s"`, disposition, filename))
+
+		return c.Send(pdfBytes)
+	})
+
 	addr := ":8080"
 	log.Println("Preview server listening on", addr)
 	log.Fatal(app.Listen(addr))
@@ -218,6 +260,15 @@ func resolvePayslipMockPath(name string) (string, bool) {
 		return "mock/payslip_bluewave.json", true
 	default:
 		return "", false
+	}
+}
+
+func isTruthy(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "1", "true", "yes", "y", "on":
+		return true
+	default:
+		return false
 	}
 }
 
