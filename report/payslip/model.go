@@ -7,19 +7,22 @@ import (
 )
 
 type Payslip struct {
-	Report Report `json:"report"`
+	TemplateID string `json:"template_id,omitempty"`
+	Report     Report `json:"report"`
 }
 
 type Report struct {
-	Company       Company    `json:"company"`
-	Document      Document   `json:"document"`
-	Payroll       Payroll    `json:"payroll"`
-	Employee      Employee   `json:"employee"`
-	Accumulations []LineItem `json:"accumulations"`
-	Earnings      []LineItem `json:"earnings"`
-	Deductions    []LineItem `json:"deductions"`
-	WorkStats     []LineItem `json:"work_stats"`
-	Totals        Totals     `json:"totals"`
+	Company       Company               `json:"company"`
+	Document      Document              `json:"document"`
+	Payroll       Payroll               `json:"payroll"`
+	Employee      Employee              `json:"employee"`
+	Accumulations []LineItem            `json:"accumulations"`
+	Earnings      []LineItem            `json:"earnings"`
+	Deductions    []LineItem            `json:"deductions"`
+	WorkStats     []LineItem            `json:"work_stats"`
+	Totals        Totals                `json:"totals"`
+	Texts         map[string]string     `json:"texts,omitempty"`
+	Sections      map[string][]LineItem `json:"sections,omitempty"`
 }
 
 type Company struct {

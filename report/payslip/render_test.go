@@ -13,6 +13,7 @@ func TestRenderPayslipMocks(t *testing.T) {
 		"../../mock/payslip_hopinn.json",
 		"../../mock/payslip_tigersoft.json",
 		"../../mock/payslip_bluewave.json",
+		"../../mock/payslip_kubota.json",
 	}
 	orientations := []string{"P", "L"}
 
@@ -28,6 +29,24 @@ func TestRenderPayslipMocks(t *testing.T) {
 			if len(pdfBytes) == 0 {
 				t.Fatalf("render %s orientation %s returned empty pdf", path, orientation)
 			}
+		}
+	}
+}
+
+func TestRenderPayslipTemplateVariants(t *testing.T) {
+	data := MustPayslipFromFile("../../mock/payslip_hopinn.json")
+
+	templateIDs := []string{"modern", "classic", "kubota"}
+	for _, templateID := range templateIDs {
+		data.TemplateID = templateID
+
+		pdfBytes, err := Render(data, "P")
+		if err != nil {
+			t.Fatalf("render template %s: %v", templateID, err)
+		}
+
+		if len(pdfBytes) == 0 {
+			t.Fatalf("render template %s returned empty pdf", templateID)
 		}
 	}
 }
@@ -77,6 +96,42 @@ func TestNormalizeOrientationDefaultsToPortrait(t *testing.T) {
 
 	if got := normalizeOrientation("landscape"); got != "L" {
 		t.Fatalf("unexpected landscape orientation: %s", got)
+	}
+}
+
+func TestNormalizeTemplateID(t *testing.T) {
+	tests := map[string]string{
+		"":           templateModern,
+		"modern":     templateModern,
+		"hopinn":     templateModern,
+		"classic":    templateKubota,
+		"kubota":     templateKubota,
+		"unknown":    defaultTemplate,
+		" BLUEWAVE ": templateModern,
+	}
+
+	for input, want := range tests {
+		if got := normalizeTemplateID(input); got != want {
+			t.Fatalf("normalize template %q: got %s want %s", input, got, want)
+		}
+	}
+}
+
+func TestBuildRenderModelAllowsTemplateOverride(t *testing.T) {
+	model := buildRenderModel(Payslip{TemplateID: "modern"}, "classic")
+	if model.TemplateID != templateKubota {
+		t.Fatalf("unexpected template id: %s", model.TemplateID)
+	}
+}
+
+func TestLoadLayoutTemplate(t *testing.T) {
+	tmpl, err := loadLayoutTemplate("kubota")
+	if err != nil {
+		t.Fatalf("load layout template: %v", err)
+	}
+
+	if tmpl.ID != templateKubota {
+		t.Fatalf("unexpected template id: %s", tmpl.ID)
 	}
 }
 

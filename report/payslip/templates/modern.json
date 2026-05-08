@@ -1,0 +1,382 @@
+{
+  "id": "modern",
+  "aliases": ["default", "hopinn", "tigersoft", "bluewave", "grid", "standard"],
+  "page": {
+    "margin": 5,
+    "default_orientation": "P"
+  },
+  "elements": [
+    {
+      "type": "group",
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.16,
+      "children": [
+        {
+          "type": "line",
+          "x": 0,
+          "y": 1,
+          "x2": 1,
+          "y2": 1,
+          "line_width": 0.35,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "logo",
+          "x": 0.02,
+          "y": 0.12,
+          "w": 0.32,
+          "h": 0.58
+        },
+        {
+          "type": "text",
+          "x": 0.02,
+          "y": 0.72,
+          "w": 0.58,
+          "h": 0.16,
+          "source": "company_name",
+          "font": { "lang": "th", "style": "B", "size": 10 },
+          "align": "L"
+        },
+        {
+          "type": "rect",
+          "x": 0.68,
+          "y": 0.14,
+          "w": 0.30,
+          "h": 0.24,
+          "line_width": 0.35,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "text",
+          "x": 0.68,
+          "y": 0.17,
+          "w": 0.30,
+          "h": 0.16,
+          "source": "document_title",
+          "font": { "lang": "th", "style": "BI", "size": 11 },
+          "align": "C"
+        },
+        {
+          "type": "text",
+          "x": 0.68,
+          "y": 0.48,
+          "w": 0.30,
+          "h": 0.12,
+          "source": "document_confidential_title",
+          "font": { "lang": "th", "style": "B", "size": 8.5 },
+          "align": "C"
+        },
+        {
+          "type": "text",
+          "x": 0.68,
+          "y": 0.60,
+          "w": 0.30,
+          "h": 0.12,
+          "source": "document_confidential_subtitle",
+          "font": { "lang": "th", "style": "BI", "size": 6.5 },
+          "align": "C"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "x": 0,
+      "y": 0.16,
+      "w": 1,
+      "h": 0.30,
+      "children": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "line_width": 0.35,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0,
+          "y": 0.125,
+          "x2": 1,
+          "y2": 0.125,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.17,
+          "y": 0,
+          "x2": 0.17,
+          "y2": 1,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.50,
+          "y": 0,
+          "x2": 0.50,
+          "y2": 1,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.625,
+          "y": 0,
+          "x2": 0.625,
+          "y2": 0.125,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.80,
+          "y": 0,
+          "x2": 0.80,
+          "y2": 1,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.925,
+          "y": 0,
+          "x2": 0.925,
+          "y2": 0.125,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "text",
+          "x": 0.015,
+          "y": 0.018,
+          "w": 0.14,
+          "h": 0.08,
+          "text": "Period",
+          "font": { "lang": "th", "style": "BI", "size": 8.5 },
+          "align": "L"
+        },
+        {
+          "type": "text",
+          "x": 0.18,
+          "y": 0.018,
+          "w": 0.30,
+          "h": 0.08,
+          "source": "payroll_period",
+          "font": { "lang": "th", "size": 8.5 },
+          "align": "L"
+        },
+        {
+          "type": "text",
+          "x": 0.515,
+          "y": 0.018,
+          "w": 0.10,
+          "h": 0.08,
+          "text": "Pay Date",
+          "font": { "lang": "th", "style": "BI", "size": 8.5 },
+          "align": "L"
+        },
+        {
+          "type": "text",
+          "x": 0.64,
+          "y": 0.018,
+          "w": 0.15,
+          "h": 0.08,
+          "source": "payroll_pay_date",
+          "font": { "lang": "th", "size": 8.5 },
+          "align": "C"
+        },
+        {
+          "type": "text",
+          "x": 0.815,
+          "y": 0.018,
+          "w": 0.09,
+          "h": 0.08,
+          "text": "Slip No.",
+          "font": { "lang": "th", "style": "BI", "size": 8.5 },
+          "align": "L"
+        },
+        {
+          "type": "text",
+          "x": 0.93,
+          "y": 0.018,
+          "w": 0.05,
+          "h": 0.08,
+          "source": "payroll_slip_no",
+          "font": { "lang": "th", "size": 8.5 },
+          "align": "R"
+        },
+        {
+          "type": "section_list",
+          "x": 0.015,
+          "y": 0.16,
+          "w": 0.47,
+          "h": 0.80,
+          "source": "employee_core",
+          "padding": 0,
+          "label_ratio": 0.38,
+          "value_align": "L",
+          "line_height": 4.3,
+          "min_row_gap": 7,
+          "max_row_gap": 7.8,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.5 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.515,
+          "y": 0.16,
+          "w": 0.46,
+          "h": 0.80,
+          "source": "accumulations",
+          "padding": 0,
+          "label_ratio": 0.60,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 7,
+          "max_row_gap": 7.8,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.5 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "x": 0,
+      "y": 0.46,
+      "w": 1,
+      "h": 0.29,
+      "children": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "line_width": 0.35,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.36,
+          "y": 0,
+          "x2": 0.36,
+          "y2": 1,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0.65,
+          "y": 0,
+          "x2": 0.65,
+          "y2": 1,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "line",
+          "x": 0,
+          "y": 0.77,
+          "x2": 1,
+          "y2": 0.77,
+          "line_width": 0.2,
+          "draw_color": { "r": 60, "g": 60, "b": 60 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.015,
+          "y": 0.03,
+          "w": 0.33,
+          "h": 0.68,
+          "source": "earnings",
+          "label_ratio": 0.60,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 5.6,
+          "max_row_gap": 6.8,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.6 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.375,
+          "y": 0.03,
+          "w": 0.25,
+          "h": 0.68,
+          "source": "deductions",
+          "label_ratio": 0.58,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 5.6,
+          "max_row_gap": 6.8,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.6 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.665,
+          "y": 0.03,
+          "w": 0.32,
+          "h": 0.68,
+          "source": "work_stats",
+          "label_ratio": 0.54,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 5.6,
+          "max_row_gap": 6.8,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.6 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.015,
+          "y": 0.80,
+          "w": 0.33,
+          "h": 0.17,
+          "source": "summary_income",
+          "label_ratio": 0.56,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 6.4,
+          "max_row_gap": 6.4,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.6 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.375,
+          "y": 0.80,
+          "w": 0.25,
+          "h": 0.17,
+          "source": "summary_deductions",
+          "label_ratio": 0.56,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 6.4,
+          "max_row_gap": 6.4,
+          "label_font": { "lang": "th", "style": "BI", "size": 8.6 },
+          "value_font": { "lang": "th", "size": 8.5 }
+        },
+        {
+          "type": "section_list",
+          "x": 0.665,
+          "y": 0.80,
+          "w": 0.32,
+          "h": 0.17,
+          "source": "summary_work_values",
+          "label_ratio": 0,
+          "value_align": "R",
+          "line_height": 4.3,
+          "min_row_gap": 6.4,
+          "max_row_gap": 6.4,
+          "value_font": { "lang": "th", "size": 8.5 }
+        }
+      ]
+    }
+  ]
+}

@@ -162,7 +162,7 @@ func main() {
 		if !ok {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"error":           "unknown payslip mock",
-				"available_mocks": []string{"hopinn", "tigersoft", "bluewave", "1", "2", "3"},
+				"available_mocks": []string{"hopinn", "tigersoft", "bluewave", "kubota", "1", "2", "3", "4"},
 			})
 		}
 
@@ -178,6 +178,10 @@ func main() {
 		}
 		if logoURL != "" {
 			data.Report.Company.Logo = logoURL
+		}
+
+		if templateID := strings.TrimSpace(c.Query("template")); templateID != "" {
+			data.TemplateID = templateID
 		}
 
 		pdfBytes, err := payslip.Render(data, c.Query("orientation", "P"))
@@ -258,6 +262,8 @@ func resolvePayslipMockPath(name string) (string, bool) {
 		return "mock/payslip_tigersoft.json", true
 	case "3", "bluewave":
 		return "mock/payslip_bluewave.json", true
+	case "4", "kubota":
+		return "mock/payslip_kubota.json", true
 	default:
 		return "", false
 	}
