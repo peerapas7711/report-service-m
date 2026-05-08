@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"report-service-m/report/fontmanager"
+	"report-service-m/internal/reports/fontmanager"
 	"strconv"
 	"strings"
 	"time"

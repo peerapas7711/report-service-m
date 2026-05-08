@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"report-service-m/report/fontmanager"
+	"report-service-m/internal/reports/fontmanager"
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
@@ -170,15 +170,24 @@ func normalizeOrientation(o string) string {
 }
 
 func MustSystemAccessFromFile(path string) SystemAccess {
-	b, err := os.ReadFile(path)
+	data, err := LoadFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return data
+}
+
+func LoadFromFile(path string) (SystemAccess, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return SystemAccess{}, err
+	}
+
 	var d SystemAccess
 	if err := json.Unmarshal(b, &d); err != nil {
-		log.Fatal(err)
+		return SystemAccess{}, err
 	}
-	return d
+	return d, nil
 }
 func pickTitle(t Title, lang string) string {
 	switch lang {

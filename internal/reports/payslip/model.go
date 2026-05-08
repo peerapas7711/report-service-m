@@ -66,15 +66,24 @@ type Totals struct {
 }
 
 func MustPayslipFromFile(path string) Payslip {
-	b, err := os.ReadFile(path)
+	data, err := LoadFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var data Payslip
-	if err := json.Unmarshal(b, &data); err != nil {
-		log.Fatal(err)
+	return data
+}
+
+func LoadFromFile(path string) (Payslip, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return Payslip{}, err
 	}
 
-	return data
+	var data Payslip
+	if err := json.Unmarshal(b, &data); err != nil {
+		return Payslip{}, err
+	}
+
+	return data, nil
 }

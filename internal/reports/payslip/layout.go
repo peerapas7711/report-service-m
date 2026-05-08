@@ -1,9 +1,11 @@
 package payslip
 
 const (
-	templateModern  = "modern"
-	templateKubota  = "kubota"
-	defaultTemplate = templateModern
+	templateModern    = "modern"
+	templateTigerSoft = "tigersoft"
+	templateBluewave  = "bluewave"
+	templateKubota    = "kubota"
+	defaultTemplate   = templateModern
 )
 
 type RenderOptions struct {

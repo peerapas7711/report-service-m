@@ -3,7 +3,7 @@ package payslip
 import (
 	"strings"
 
-	"report-service-m/report/fontmanager"
+	"report-service-m/internal/reports/fontmanager"
 
 	"github.com/jung-kurt/gofpdf"
 )

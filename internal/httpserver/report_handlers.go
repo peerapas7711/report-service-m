@@ -1,0 +1,192 @@
+package httpserver
+
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"report-service-m/internal/reports/payslip"
+	"report-service-m/internal/reports/systemaccesspermission"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+type payslipRenderRequest struct {
+	Data        payslip.Payslip `json:"data"`
+	Orientation string          `json:"orientation,omitempty"`
+	TemplateID  string          `json:"template_id,omitempty"`
+	FileName    string          `json:"file_name,omitempty"`
+}
+
+type systemAccessRenderRequest struct {
+	Data        systemaccesspermission.SystemAccess `json:"data"`
+	Orientation string                              `json:"orientation,omitempty"`
+	Lang        string                              `json:"lang,omitempty"`
+	FileName    string                              `json:"file_name,omitempty"`
+}
+
+type queueTicketRenderRequest struct {
+	Title      string `json:"title,omitempty"`
+	Subtitle   string `json:"subtitle,omitempty"`
+	QueueLabel string `json:"queue_label,omitempty"`
+	Label      string `json:"label,omitempty"`
+	Prefix     string `json:"prefix,omitempty"`
+	Lang       string `json:"lang,omitempty"`
+	Start      int    `json:"start,omitempty"`
+	Total      int    `json:"total,omitempty"`
+	Digits     int    `json:"digits,omitempty"`
+	FileName   string `json:"file_name,omitempty"`
+}
+
+func renderPayslip(c *fiber.Ctx) error {
+	var req payslipRenderRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errorJSON(c, fiber.StatusBadRequest, "invalid payslip request: "+err.Error())
+	}
+
+	pdfBytes, err := payslip.RenderWithOptions(req.Data, payslip.RenderOptions{
+		Orientation: req.Orientation,
+		TemplateID:  req.TemplateID,
+	})
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render payslip failed: "+err.Error())
+	}
+
+	return sendPDF(c, pdfBytes, defaultString(req.FileName, "payslip.pdf"), "attachment")
+}
+
+func renderSystemAccessPermission(c *fiber.Ctx) error {
+	var req systemAccessRenderRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errorJSON(c, fiber.StatusBadRequest, "invalid system access request: "+err.Error())
+	}
+
+	pdfBytes, err := systemaccesspermission.SystemAccessPermission(
+		req.Data,
+		defaultString(req.Orientation, "P"),
+		defaultString(req.Lang, "th"),
+	)
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render system access permission failed: "+err.Error())
+	}
+
+	return sendPDF(c, pdfBytes, defaultString(req.FileName, "system_access_permission.pdf"), "attachment")
+}
+
+func previewPayslip(c *fiber.Ctx) error {
+	mockPath, ok := resolvePayslipMockPath(c.Query("mock", "hopinn"))
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error":           "unknown payslip mock",
+			"available_mocks": []string{"hopinn", "tigersoft", "bluewave", "kubota", "1", "2", "3", "4"},
+		})
+	}
+
+	data, err := payslip.LoadFromFile(projectFile(mockPath))
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "load payslip mock failed: "+err.Error())
+	}
+
+	if companyName := strings.TrimSpace(c.Query("company_name")); companyName != "" {
+		data.Report.Company.Name = companyName
+	}
+
+	logoURL := strings.TrimSpace(c.Query("logo"))
+	if logoURL == "" {
+		logoURL = strings.TrimSpace(c.Query("logo_url"))
+	}
+	if logoURL != "" {
+		data.Report.Company.Logo = logoURL
+	}
+
+	if templateID := strings.TrimSpace(c.Query("template")); templateID != "" {
+		data.TemplateID = templateID
+	}
+
+	pdfBytes, err := payslip.Render(data, c.Query("orientation", "P"))
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render payslip preview failed: "+err.Error())
+	}
+
+	disposition := "inline"
+	if isTruthy(c.Query("download")) {
+		disposition = "attachment"
+	}
+
+	return sendPDF(c, pdfBytes, "payslip_preview.pdf", disposition)
+}
+
+func previewSystemAccessPermission(c *fiber.Ctx) error {
+	data, err := systemaccesspermission.LoadFromFile(projectFile("mock/permissionreport.json"))
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "load system access mock failed: "+err.Error())
+	}
+
+	pdfBytes, err := systemaccesspermission.SystemAccessPermission(
+		data,
+		c.Query("orientation", "P"),
+		c.Query("lang", "th"),
+	)
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render system access preview failed: "+err.Error())
+	}
+
+	return sendPDF(c, pdfBytes, "system_access_permission_preview.pdf", "inline")
+}
+
+func resolvePayslipMockPath(name string) (string, bool) {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "", "1", "hopinn":
+		return "mock/payslip_hopinn.json", true
+	case "2", "tigersoft":
+		return "mock/payslip_tigersoft.json", true
+	case "3", "bluewave":
+		return "mock/payslip_bluewave.json", true
+	case "4", "kubota":
+		return "mock/payslip_kubota.json", true
+	default:
+		return "", false
+	}
+}
+
+func queueTicketFilename(start, total int) string {
+	if start <= 0 {
+		start = 1
+	}
+	if total <= 0 {
+		total = 700
+	}
+
+	return fmt.Sprintf("queue_tickets_%04d_%04d.pdf", start, start+total-1)
+}
+
+func intQuery(c *fiber.Ctx, key string, fallback int) int {
+	value := strings.TrimSpace(c.Query(key))
+	if value == "" {
+		return fallback
+	}
+
+	number, err := strconv.Atoi(value)
+	if err != nil || number < 0 {
+		return fallback
+	}
+
+	return number
+}
+
+func isTruthy(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "1", "true", "yes", "y", "on":
+		return true
+	default:
+		return false
+	}
+}
+
+func defaultString(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
+}

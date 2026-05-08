@@ -1,6 +1,6 @@
 {
   "id": "modern",
-  "aliases": ["default", "hopinn", "tigersoft", "bluewave", "grid", "standard"],
+  "aliases": ["default", "hopinn", "grid", "standard"],
   "page": {
     "margin": 5,
     "default_orientation": "P"

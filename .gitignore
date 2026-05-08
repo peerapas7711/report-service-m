@@ -10,6 +10,10 @@
 *.out
 coverage.out
 
+# Local binaries
+/report-service
+/queueticket
+
 # Local caches
 .gocache/
 

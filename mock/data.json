@@ -1,9 +1,0 @@
-{
-  "employee": {
-    "profile": {
-      "name": "Peerapas Saenprasert",
-      "position": "Senior Flutter Developer"
-    },
-    "note": "ทดสอบข้อความยาวมาก ๆ เพื่อดูว่า MultiCell ตัดบรรทัดและจัดแถวให้สวยได้จริงหรือไม่ โดยไม่ทับกันและขึ้นหน้าใหม่เองเมื่อพื้นที่ไม่พอ"
-  }
-}

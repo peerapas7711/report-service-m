@@ -10,10 +10,10 @@ import (
 
 func TestRenderPayslipMocks(t *testing.T) {
 	mockFiles := []string{
-		"../../mock/payslip_hopinn.json",
-		"../../mock/payslip_tigersoft.json",
-		"../../mock/payslip_bluewave.json",
-		"../../mock/payslip_kubota.json",
+		"../../../mock/payslip_hopinn.json",
+		"../../../mock/payslip_tigersoft.json",
+		"../../../mock/payslip_bluewave.json",
+		"../../../mock/payslip_kubota.json",
 	}
 	orientations := []string{"P", "L"}
 
@@ -33,10 +33,31 @@ func TestRenderPayslipMocks(t *testing.T) {
 	}
 }
 
-func TestRenderPayslipTemplateVariants(t *testing.T) {
-	data := MustPayslipFromFile("../../mock/payslip_hopinn.json")
+func TestPayslipMocksUseDistinctTemplates(t *testing.T) {
+	mockFiles := []string{
+		"../../../mock/payslip_hopinn.json",
+		"../../../mock/payslip_tigersoft.json",
+		"../../../mock/payslip_bluewave.json",
+		"../../../mock/payslip_kubota.json",
+	}
 
-	templateIDs := []string{"modern", "classic", "kubota"}
+	seen := make(map[string]string)
+	for _, path := range mockFiles {
+		data := MustPayslipFromFile(path)
+		if data.TemplateID == "" {
+			t.Fatalf("%s missing template id", path)
+		}
+		if existing, ok := seen[data.TemplateID]; ok {
+			t.Fatalf("%s and %s use the same template id %q", existing, path, data.TemplateID)
+		}
+		seen[data.TemplateID] = path
+	}
+}
+
+func TestRenderPayslipTemplateVariants(t *testing.T) {
+	data := MustPayslipFromFile("../../../mock/payslip_hopinn.json")
+
+	templateIDs := []string{"modern", "tigersoft", "bluewave", "classic", "kubota"}
 	for _, templateID := range templateIDs {
 		data.TemplateID = templateID
 
@@ -52,7 +73,7 @@ func TestRenderPayslipTemplateVariants(t *testing.T) {
 }
 
 func TestRenderPayslipLogoFromURL(t *testing.T) {
-	data := MustPayslipFromFile("../../mock/payslip_hopinn.json")
+	data := MustPayslipFromFile("../../../mock/payslip_hopinn.json")
 
 	pngBytes, err := base64.StdEncoding.DecodeString("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==")
 	if err != nil {
@@ -104,10 +125,13 @@ func TestNormalizeTemplateID(t *testing.T) {
 		"":           templateModern,
 		"modern":     templateModern,
 		"hopinn":     templateModern,
+		"tigersoft":  templateTigerSoft,
+		"ts":         templateTigerSoft,
+		"resort":     templateBluewave,
 		"classic":    templateKubota,
 		"kubota":     templateKubota,
 		"unknown":    defaultTemplate,
-		" BLUEWAVE ": templateModern,
+		" BLUEWAVE ": templateBluewave,
 	}
 
 	for input, want := range tests {
