@@ -13,6 +13,8 @@ func registerRoutes(app *fiber.App, cfg config.Config) {
 	app.Get("/health", health(cfg))
 	app.Get("/payslip", payslipPage)
 	app.Get("/ready", health(cfg))
+	app.Get("/report/payslip/html", previewPayslipHTML)
+	app.Get("/report/payslip/pdf", previewPayslipHTMLPDF)
 
 	v1 := app.Group("/v1")
 	v1.Get("/health", health(cfg))
@@ -34,6 +36,8 @@ func serviceInfo(cfg config.Config) fiber.Handler {
 			"routes": []string{
 				"GET /health",
 				"GET /payslip",
+				"GET /report/payslip/html",
+				"GET /report/payslip/pdf",
 				"POST /v1/reports/payslip/render",
 				"POST /v1/reports/system-access-permission/render",
 			},

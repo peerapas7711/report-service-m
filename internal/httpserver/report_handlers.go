@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"report-service-m/internal/reports/payslip"
+	"report-service-m/internal/reports/payslip_html"
 	"report-service-m/internal/reports/systemaccesspermission"
 
 	"github.com/gofiber/fiber/v2"
@@ -75,9 +76,68 @@ func renderSystemAccessPermission(c *fiber.Ctx) error {
 }
 
 func previewPayslip(c *fiber.Ctx) error {
+	data, err := loadPreviewPayslipData(c)
+	if err != nil {
+		return err
+	}
+
+	pdfBytes, err := payslip.Render(data, c.Query("orientation", "P"))
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render payslip preview failed: "+err.Error())
+	}
+
+	disposition := "inline"
+	if isTruthy(c.Query("download")) {
+		disposition = "attachment"
+	}
+
+	return sendPDF(c, pdfBytes, "payslip_preview.pdf", disposition)
+}
+
+func previewPayslipHTML(c *fiber.Ctx) error {
+	data, err := loadPreviewPayslipData(c)
+	if err != nil {
+		return err
+	}
+
+	html, err := payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render payslip html failed: "+err.Error())
+	}
+
+	c.Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	c.Set("Content-Type", "text/html; charset=utf-8")
+	return c.SendString(html)
+}
+
+func previewPayslipHTMLPDF(c *fiber.Ctx) error {
+	data, err := loadPreviewPayslipData(c)
+	if err != nil {
+		return err
+	}
+
+	html, err := payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "render payslip html failed: "+err.Error())
+	}
+
+	pdfBytes, err := payslip_html.GeneratePDF(html)
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "generate payslip html pdf failed: "+err.Error())
+	}
+
+	disposition := "inline"
+	if isTruthy(c.Query("download")) {
+		disposition = "attachment"
+	}
+
+	return sendPDF(c, pdfBytes, "payslip_html_preview.pdf", disposition)
+}
+
+func loadPreviewPayslipData(c *fiber.Ctx) (payslip.Payslip, error) {
 	mockPath, ok := resolvePayslipMockPath(c.Query("mock", "hopinn"))
 	if !ok {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+		return payslip.Payslip{}, c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error":           "unknown payslip mock",
 			"available_mocks": []string{"hopinn", "tigersoft", "bluewave", "kubota", "1", "2", "3", "4"},
 		})
@@ -85,7 +145,7 @@ func previewPayslip(c *fiber.Ctx) error {
 
 	data, err := payslip.LoadFromFile(projectFile(mockPath))
 	if err != nil {
-		return errorJSON(c, fiber.StatusInternalServerError, "load payslip mock failed: "+err.Error())
+		return payslip.Payslip{}, errorJSON(c, fiber.StatusInternalServerError, "load payslip mock failed: "+err.Error())
 	}
 
 	if companyName := strings.TrimSpace(c.Query("company_name")); companyName != "" {
@@ -104,17 +164,7 @@ func previewPayslip(c *fiber.Ctx) error {
 		data.TemplateID = templateID
 	}
 
-	pdfBytes, err := payslip.Render(data, c.Query("orientation", "P"))
-	if err != nil {
-		return errorJSON(c, fiber.StatusInternalServerError, "render payslip preview failed: "+err.Error())
-	}
-
-	disposition := "inline"
-	if isTruthy(c.Query("download")) {
-		disposition = "attachment"
-	}
-
-	return sendPDF(c, pdfBytes, "payslip_preview.pdf", disposition)
+	return data, nil
 }
 
 func previewSystemAccessPermission(c *fiber.Ctx) error {
