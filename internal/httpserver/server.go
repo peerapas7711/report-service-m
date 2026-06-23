@@ -15,7 +15,7 @@ func New(cfg config.Config) *fiber.App {
 	})
 
 	app.Use(recover.New())
-	registerRoutes(app, cfg)
+	registerRoutes(app, cfg, newReportHandlers())
 
 	return app
 }

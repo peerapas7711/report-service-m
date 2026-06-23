@@ -8,13 +8,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func registerRoutes(app *fiber.App, cfg config.Config) {
+func registerRoutes(app *fiber.App, cfg config.Config, handlers reportHandlers) {
 	app.Get("/", serviceInfo(cfg))
 	app.Get("/health", health(cfg))
 	app.Get("/payslip", payslipPage)
 	app.Get("/ready", health(cfg))
-	app.Get("/report/payslip/html", previewPayslipHTML)
-	app.Get("/report/payslip/pdf", previewPayslipHTMLPDF)
+	app.Get("/report/payslip/html", handlers.previewPayslipHTML)
+	app.Get("/report/payslip/pdf", handlers.previewPayslipHTMLPDF)
 
 	v1 := app.Group("/v1")
 	v1.Get("/health", health(cfg))
@@ -24,7 +24,7 @@ func registerRoutes(app *fiber.App, cfg config.Config) {
 	reports.Post("/system-access-permission/render", renderSystemAccessPermission)
 
 	preview := app.Group("/preview")
-	preview.Get("/payslip", previewPayslip)
+	preview.Get("/payslip", handlers.previewPayslip)
 	preview.Get("/system-access", previewSystemAccessPermission)
 }
 

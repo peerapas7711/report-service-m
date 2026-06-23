@@ -84,3 +84,54 @@ func TestPreviewPayslipDownloadDisposition(t *testing.T) {
 		t.Fatalf("unexpected disposition: %s", got)
 	}
 }
+
+func TestReportPayslipHTMLUsesMockSQLRepository(t *testing.T) {
+	app := New(config.Config{
+		AppName:     "report-service-test",
+		Environment: "test",
+		BodyLimit:   1 << 20,
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/report/payslip/html?mock=hopinn", nil)
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("report payslip html request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+	if got := resp.Header.Get("Content-Type"); !strings.HasPrefix(got, "text/html") {
+		t.Fatalf("unexpected content type: %s", got)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read report payslip html: %v", err)
+	}
+	if !strings.Contains(string(body), "Hop Inn Hotel Public Company Limited") {
+		t.Fatal("html response missing SQL-like mock payslip data")
+	}
+}
+
+func TestReportPayslipHTMLUnknownMock(t *testing.T) {
+	app := New(config.Config{
+		AppName:     "report-service-test",
+		Environment: "test",
+		BodyLimit:   1 << 20,
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/report/payslip/html?mock=missing", nil)
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("report payslip html request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+}

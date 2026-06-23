@@ -1,11 +1,12 @@
 package httpserver
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 
+	"report-service-m/internal/datasources/payslipdata"
 	"report-service-m/internal/reports/payslip"
 	"report-service-m/internal/reports/payslip_html"
 	"report-service-m/internal/reports/systemaccesspermission"
@@ -38,6 +39,19 @@ type queueTicketRenderRequest struct {
 	Total      int    `json:"total,omitempty"`
 	Digits     int    `json:"digits,omitempty"`
 	FileName   string `json:"file_name,omitempty"`
+}
+
+type reportHandlers struct {
+	payslipRepo    payslipdata.Repository
+	payslipRepoErr error
+}
+
+func newReportHandlers() reportHandlers {
+	repo, err := newPreviewPayslipRepository()
+	return reportHandlers{
+		payslipRepo:    repo,
+		payslipRepoErr: err,
+	}
 }
 
 func renderPayslip(c *fiber.Ctx) error {
@@ -75,8 +89,8 @@ func renderSystemAccessPermission(c *fiber.Ctx) error {
 	return sendPDF(c, pdfBytes, defaultString(req.FileName, "system_access_permission.pdf"), "attachment")
 }
 
-func previewPayslip(c *fiber.Ctx) error {
-	data, err := loadPreviewPayslipData(c)
+func (h reportHandlers) previewPayslip(c *fiber.Ctx) error {
+	data, err := h.loadPreviewPayslipData(c)
 	if err != nil {
 		return err
 	}
@@ -94,8 +108,8 @@ func previewPayslip(c *fiber.Ctx) error {
 	return sendPDF(c, pdfBytes, "payslip_preview.pdf", disposition)
 }
 
-func previewPayslipHTML(c *fiber.Ctx) error {
-	data, err := loadPreviewPayslipData(c)
+func (h reportHandlers) previewPayslipHTML(c *fiber.Ctx) error {
+	data, err := h.loadPreviewPayslipData(c)
 	if err != nil {
 		return err
 	}
@@ -110,8 +124,8 @@ func previewPayslipHTML(c *fiber.Ctx) error {
 	return c.SendString(html)
 }
 
-func previewPayslipHTMLPDF(c *fiber.Ctx) error {
-	data, err := loadPreviewPayslipData(c)
+func (h reportHandlers) previewPayslipHTMLPDF(c *fiber.Ctx) error {
+	data, err := h.loadPreviewPayslipData(c)
 	if err != nil {
 		return err
 	}
@@ -134,18 +148,21 @@ func previewPayslipHTMLPDF(c *fiber.Ctx) error {
 	return sendPDF(c, pdfBytes, "payslip_html_preview.pdf", disposition)
 }
 
-func loadPreviewPayslipData(c *fiber.Ctx) (payslip.Payslip, error) {
-	mockPath, ok := resolvePayslipMockPath(c.Query("mock", "hopinn"))
-	if !ok {
-		return payslip.Payslip{}, c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error":           "unknown payslip mock",
-			"available_mocks": []string{"hopinn", "tigersoft", "bluewave", "kubota", "1", "2", "3", "4"},
-		})
+func (h reportHandlers) loadPreviewPayslipData(c *fiber.Ctx) (payslip.Payslip, error) {
+	if h.payslipRepoErr != nil {
+		return payslip.Payslip{}, errorJSON(c, fiber.StatusInternalServerError, "initialize payslip repository failed: "+h.payslipRepoErr.Error())
 	}
 
-	data, err := payslip.LoadFromFile(projectFile(mockPath))
+	query := payslipQuery(c)
+	data, err := h.payslipRepo.FindPayslip(c.UserContext(), query)
 	if err != nil {
-		return payslip.Payslip{}, errorJSON(c, fiber.StatusInternalServerError, "load payslip mock failed: "+err.Error())
+		if errors.Is(err, payslipdata.ErrNotFound) {
+			return payslip.Payslip{}, c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":           "payslip mock not found",
+				"available_mocks": availablePayslipMocks(h.payslipRepo),
+			})
+		}
+		return payslip.Payslip{}, errorJSON(c, fiber.StatusInternalServerError, "load payslip data failed: "+err.Error())
 	}
 
 	if companyName := strings.TrimSpace(c.Query("company_name")); companyName != "" {
@@ -167,6 +184,65 @@ func loadPreviewPayslipData(c *fiber.Ctx) (payslip.Payslip, error) {
 	return data, nil
 }
 
+func payslipQuery(c *fiber.Ctx) payslipdata.Query {
+	hasSQLLikeFilters := strings.TrimSpace(c.Query("slip_id")) != "" ||
+		strings.TrimSpace(c.Query("company_id")) != "" ||
+		strings.TrimSpace(c.Query("employee_id")) != "" ||
+		strings.TrimSpace(c.Query("period_id")) != "" ||
+		strings.TrimSpace(c.Query("period")) != "" ||
+		strings.TrimSpace(c.Query("slip_no")) != ""
+
+	mockName := strings.TrimSpace(c.Query("mock"))
+	if mockName == "" && !hasSQLLikeFilters {
+		mockName = "hopinn"
+	}
+
+	return payslipdata.Query{
+		MockName:   mockName,
+		SlipID:     c.Query("slip_id"),
+		CompanyID:  c.Query("company_id"),
+		EmployeeID: c.Query("employee_id"),
+		PeriodID:   c.Query("period_id"),
+		Period:     c.Query("period"),
+		SlipNo:     c.Query("slip_no"),
+	}
+}
+
+func availablePayslipMocks(repo payslipdata.Repository) []string {
+	if catalog, ok := repo.(payslipdata.MockCatalog); ok {
+		return catalog.AvailableMocks()
+	}
+	return []string{}
+}
+
+func newPreviewPayslipRepository() (payslipdata.Repository, error) {
+	seeds := []struct {
+		name    string
+		path    string
+		aliases []string
+	}{
+		{name: "hopinn", path: "mock/payslip_hopinn.json", aliases: []string{"1", "default", "modern"}},
+		{name: "tigersoft", path: "mock/payslip_tigersoft.json", aliases: []string{"2", "tiger_soft"}},
+		{name: "bluewave", path: "mock/payslip_bluewave.json", aliases: []string{"3"}},
+		{name: "kubota", path: "mock/payslip_kubota.json", aliases: []string{"4"}},
+	}
+
+	mockSeeds := make([]payslipdata.MockPayslipSeed, 0, len(seeds))
+	for _, seed := range seeds {
+		data, err := payslip.LoadFromFile(projectFile(seed.path))
+		if err != nil {
+			return nil, err
+		}
+		mockSeeds = append(mockSeeds, payslipdata.MockPayslipSeed{
+			MockName: seed.name,
+			Aliases:  seed.aliases,
+			Data:     data,
+		})
+	}
+
+	return payslipdata.NewMockSQLRepository(payslipdata.RowsFromPayslips(mockSeeds)), nil
+}
+
 func previewSystemAccessPermission(c *fiber.Ctx) error {
 	data, err := systemaccesspermission.LoadFromFile(projectFile("mock/permissionreport.json"))
 	if err != nil {
@@ -183,21 +259,6 @@ func previewSystemAccessPermission(c *fiber.Ctx) error {
 	}
 
 	return sendPDF(c, pdfBytes, "system_access_permission_preview.pdf", "inline")
-}
-
-func resolvePayslipMockPath(name string) (string, bool) {
-	switch strings.ToLower(strings.TrimSpace(name)) {
-	case "", "1", "hopinn":
-		return "mock/payslip_hopinn.json", true
-	case "2", "tigersoft":
-		return "mock/payslip_tigersoft.json", true
-	case "3", "bluewave":
-		return "mock/payslip_bluewave.json", true
-	case "4", "kubota":
-		return "mock/payslip_kubota.json", true
-	default:
-		return "", false
-	}
 }
 
 func queueTicketFilename(start, total int) string {

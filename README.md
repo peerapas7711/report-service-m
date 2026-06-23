@@ -26,10 +26,31 @@ Preview routes remain for local checks:
 - `GET /preview/payslip`
 - `GET /preview/system-access`
 
+Payslip preview data currently uses a SQL-like mock repository. Existing mock
+aliases still work:
+
+- `GET /report/payslip/html?mock=hopinn`
+- `GET /report/payslip/html?mock=tigersoft`
+- `GET /report/payslip/pdf?mock=1`
+
+The same repository also accepts SQL-like filters for later DB wiring:
+
+- `company_id`
+- `employee_id`
+- `period_id`
+- `period`
+- `slip_no`
+- `slip_id`
+
+Example:
+
+- `GET /report/payslip/html?company_id=company_hopinn&employee_id=HOP-240117&slip_no=1`
+
 ## Structure
 
 - `cmd/report-service`: service entrypoint
 - `internal/config`: environment configuration
+- `internal/datasources`: report data repositories and mock data sources
 - `internal/httpserver`: Fiber routes and handlers
 - `internal/reports`: PDF rendering packages
 - `assets/fonts`: bundled fonts used by the PDF renderers
