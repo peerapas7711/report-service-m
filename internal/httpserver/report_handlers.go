@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"report-service-m/internal/datasources/payslipdata"
 	"report-service-m/internal/reports/payslip"
@@ -45,6 +46,8 @@ type reportHandlers struct {
 	payslipRepo    payslipdata.Repository
 	payslipRepoErr error
 }
+
+const maxPayslipHTMLReportCount = 1000
 
 func newReportHandlers() reportHandlers {
 	repo, err := newPreviewPayslipRepository()
@@ -114,7 +117,7 @@ func (h reportHandlers) previewPayslipHTML(c *fiber.Ctx) error {
 		return err
 	}
 
-	html, err := payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)
+	html, _, err := renderPreviewPayslipHTML(c, data)
 	if err != nil {
 		return errorJSON(c, fiber.StatusInternalServerError, "render payslip html failed: "+err.Error())
 	}
@@ -130,12 +133,14 @@ func (h reportHandlers) previewPayslipHTMLPDF(c *fiber.Ctx) error {
 		return err
 	}
 
-	html, err := payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)
+	html, count, err := renderPreviewPayslipHTML(c, data)
 	if err != nil {
 		return errorJSON(c, fiber.StatusInternalServerError, "render payslip html failed: "+err.Error())
 	}
 
-	pdfBytes, err := payslip_html.GeneratePDF(html)
+	pdfBytes, err := payslip_html.GeneratePDFWithOptions(html, payslip_html.PDFOptions{
+		Timeout: payslipHTMLPDFTimeout(count),
+	})
 	if err != nil {
 		return errorJSON(c, fiber.StatusInternalServerError, "generate payslip html pdf failed: "+err.Error())
 	}
@@ -145,7 +150,80 @@ func (h reportHandlers) previewPayslipHTMLPDF(c *fiber.Ctx) error {
 		disposition = "attachment"
 	}
 
-	return sendPDF(c, pdfBytes, "payslip_html_preview.pdf", disposition)
+	filename := "payslip_html_preview.pdf"
+	if count > 1 {
+		filename = fmt.Sprintf("payslip_html_preview_%04d.pdf", count)
+	}
+
+	return sendPDF(c, pdfBytes, filename, disposition)
+}
+
+func renderPreviewPayslipHTML(c *fiber.Ctx, data payslip.Payslip) (string, int, error) {
+	count := payslipHTMLReportCount(c)
+	if count <= 1 {
+		html, err := payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)
+		return html, 1, err
+	}
+
+	html, err := payslip_html.RenderHTMLBatch(
+		c.Query("template", data.TemplateID),
+		makePayslipTestBatch(data, count),
+	)
+	return html, count, err
+}
+
+func payslipHTMLReportCount(c *fiber.Ctx) int {
+	count := intQuery(c, "count", 0)
+	if count <= 0 {
+		count = intQuery(c, "total", 1)
+	}
+	if count <= 0 {
+		return 1
+	}
+	if count > maxPayslipHTMLReportCount {
+		return maxPayslipHTMLReportCount
+	}
+	return count
+}
+
+func makePayslipTestBatch(base payslip.Payslip, count int) []payslip.Payslip {
+	batch := make([]payslip.Payslip, 0, count)
+	for i := 1; i <= count; i++ {
+		item := base
+		item.Report.Employee.Name = sequenceText(base.Report.Employee.Name, "Test Employee", i)
+		item.Report.Employee.EmpID = sequenceCode(base.Report.Employee.EmpID, "EMP", i)
+		item.Report.Payroll.SlipNo = sequenceCode(base.Report.Payroll.SlipNo, "SLIP", i)
+		batch = append(batch, item)
+	}
+	return batch
+}
+
+func sequenceText(value, fallback string, seq int) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		value = fallback
+	}
+	return fmt.Sprintf("%s %04d", value, seq)
+}
+
+func sequenceCode(value, fallback string, seq int) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		value = fallback
+	}
+	return fmt.Sprintf("%s-%04d", value, seq)
+}
+
+func payslipHTMLPDFTimeout(count int) time.Duration {
+	if count <= 1 {
+		return 30 * time.Second
+	}
+
+	timeout := 30*time.Second + time.Duration(count)*500*time.Millisecond
+	if timeout > 10*time.Minute {
+		return 10 * time.Minute
+	}
+	return timeout
 }
 
 func (h reportHandlers) loadPreviewPayslipData(c *fiber.Ctx) (payslip.Payslip, error) {

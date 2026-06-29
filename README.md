@@ -32,6 +32,7 @@ aliases still work:
 - `GET /report/payslip/html?mock=hopinn`
 - `GET /report/payslip/html?mock=tigersoft`
 - `GET /report/payslip/pdf?mock=1`
+- `GET /report/payslip/pdf?mock=tigersoft&count=1000`
 
 The same repository also accepts SQL-like filters for later DB wiring:
 
@@ -41,6 +42,10 @@ The same repository also accepts SQL-like filters for later DB wiring:
 - `period`
 - `slip_no`
 - `slip_id`
+
+Use `count` or `total` on `/report/payslip/html` and `/report/payslip/pdf`
+to generate a local batch from one mock payslip. The batch is capped at 1000
+reports.
 
 Example:
 

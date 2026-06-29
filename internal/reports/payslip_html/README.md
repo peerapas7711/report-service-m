@@ -61,6 +61,7 @@ GET /report/payslip/pdf
 ```sh
 curl -o payslip.pdf "http://localhost:8080/report/payslip/pdf?mock=hopinn"
 curl -o payslip.pdf "http://localhost:8080/report/payslip/pdf?mock=2&download=1"
+curl -o payslip_1000.pdf "http://localhost:8080/report/payslip/pdf?mock=tigersoft&count=1000"
 ```
 
 ผลลัพธ์:
@@ -92,6 +93,7 @@ Query ที่ใช้ override การแสดงผล:
 | `template` | เลือก template เช่น `default`, `modern`, `tigersoft`, `tiger_soft` |
 | `company_name` | override ชื่อบริษัทก่อน render |
 | `logo` หรือ `logo_url` | override logo บริษัทก่อน render |
+| `count` หรือ `total` | สร้าง batch จาก mock เดียวกัน เช่น `count=1000`; จำกัดสูงสุด 1000 รายการ |
 | `download` | ใช้กับ `/report/payslip/pdf`; ถ้าเป็นค่าจริง เช่น `1`, `true`, `yes` จะส่ง PDF แบบ download |
 
 ถ้าไม่ส่ง `mock` และไม่ส่งตัวกรอง SQL-like เลย ระบบจะ default เป็น `mock=hopinn`
@@ -176,9 +178,9 @@ Data model อยู่ที่ `internal/reports/payslip/model.go` และ H
 3. `loadPreviewPayslipData` สร้าง `payslipdata.Query` จาก query string ด้วย `payslipQuery(c)`
 4. `payslipRepo.FindPayslip()` หา payslip จาก repository
 5. ถ้ามี query `company_name`, `logo`/`logo_url`, หรือ `template` จะ override ลง data ก่อน render
-6. เรียก `payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)`
+6. เรียก `payslip_html.RenderHTML(c.Query("template", data.TemplateID), data)` หรือ `RenderHTMLBatch()` ถ้าส่ง `count`/`total` มากกว่า 1
 7. ถ้าเป็น `/report/payslip/html` จะส่ง HTML กลับทันที
-8. ถ้าเป็น `/report/payslip/pdf` จะส่ง HTML เข้า `payslip_html.GeneratePDF()` แล้วส่ง PDF กลับ
+8. ถ้าเป็น `/report/payslip/pdf` จะส่ง HTML เข้า `payslip_html.GeneratePDFWithOptions()` แล้วส่ง PDF กลับ
 
 กรณีไม่เจอข้อมูล จะตอบ `400` พร้อม JSON:
 

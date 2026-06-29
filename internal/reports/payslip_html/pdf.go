@@ -2,9 +2,7 @@ package payslip_html
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -12,9 +10,24 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+const defaultPDFTimeout = 30 * time.Second
+
+type PDFOptions struct {
+	Timeout time.Duration
+}
+
 func GeneratePDF(html string) ([]byte, error) {
+	return GeneratePDFWithOptions(html, PDFOptions{})
+}
+
+func GeneratePDFWithOptions(html string, opts PDFOptions) ([]byte, error) {
 	if strings.TrimSpace(html) == "" {
 		return nil, fmt.Errorf("html is empty")
+	}
+
+	timeout := opts.Timeout
+	if timeout <= 0 {
+		timeout = defaultPDFTimeout
 	}
 
 	allocatorCtx, cancelAllocator := chromedp.NewExecAllocator(
@@ -31,12 +44,19 @@ func GeneratePDF(html string) ([]byte, error) {
 	ctx, cancel := chromedp.NewContext(allocatorCtx)
 	defer cancel()
 
-	ctx, cancelTimeout := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancelTimeout := context.WithTimeout(ctx, timeout)
 	defer cancelTimeout()
 
 	var pdf []byte
 	if err := chromedp.Run(ctx,
-		chromedp.Navigate(htmlDataURL(html)),
+		chromedp.Navigate("about:blank"),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			frameTree, err := page.GetFrameTree().Do(ctx)
+			if err != nil {
+				return err
+			}
+			return page.SetDocumentContent(frameTree.Frame.ID, html).Do(ctx)
+		}),
 		chromedp.WaitReady("body", chromedp.ByQuery),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			var err error
@@ -51,9 +71,4 @@ func GeneratePDF(html string) ([]byte, error) {
 	}
 
 	return pdf, nil
-}
-
-func htmlDataURL(html string) string {
-	encoded := base64.StdEncoding.EncodeToString([]byte(html))
-	return "data:text/html;charset=utf-8;base64," + url.PathEscape(encoded)
 }

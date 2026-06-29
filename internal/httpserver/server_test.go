@@ -116,6 +116,39 @@ func TestReportPayslipHTMLUsesMockSQLRepository(t *testing.T) {
 	}
 }
 
+func TestReportPayslipHTMLRendersBatchCount(t *testing.T) {
+	app := New(config.Config{
+		AppName:     "report-service-test",
+		Environment: "test",
+		BodyLimit:   1 << 20,
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/report/payslip/html?mock=tigersoft&count=3", nil)
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("report payslip html batch request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read report payslip html batch: %v", err)
+	}
+
+	html := string(body)
+	if got := strings.Count(html, `class="page payslip payslip-tigersoft"`); got != 3 {
+		t.Fatalf("unexpected payslip page count: %d", got)
+	}
+	if !strings.Contains(html, "Peerapat S. 0003") {
+		t.Fatal("html batch response missing sequenced employee data")
+	}
+}
+
 func TestReportPayslipHTMLUnknownMock(t *testing.T) {
 	app := New(config.Config{
 		AppName:     "report-service-test",

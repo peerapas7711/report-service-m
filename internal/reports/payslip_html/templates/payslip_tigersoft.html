@@ -7,6 +7,12 @@
   <style>{{ .Stylesheet }}</style>
 </head>
 <body>
+  {{ template "payslip_tigersoft.content" . }}
+</body>
+</html>
+{{- end }}
+
+{{ define "payslip_tigersoft.content" -}}
   <main class="page payslip payslip-tigersoft">
     <header class="header accent-header">
       <div class="brand">
@@ -99,6 +105,4 @@
       <span>{{ .Report.Company.Name }}</span>
     </footer>
   </main>
-</body>
-</html>
 {{- end }}
