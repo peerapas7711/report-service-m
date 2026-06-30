@@ -4,8 +4,8 @@
   <head>
     <meta charset="utf-8" />
     <title>{{ default .Report.Document.Title "Payslip" }}</title>
-    <!-- <style>{{ .Stylesheet }}</style> -->
-    <link rel="stylesheet" href="style.css" />
+    <style>{{ .Stylesheet }}</style>
+    <!-- <link rel="stylesheet" href="style.css" /> -->
   </head>
   <body>
     {{ template "content" . }}
