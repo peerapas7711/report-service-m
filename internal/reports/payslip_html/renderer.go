@@ -132,7 +132,6 @@ func AvailableTemplates() []string {
 	return []string{
 		"default",
 		"thai_demar",
-		
 	}
 }
 
@@ -146,7 +145,7 @@ func NormalizeTemplateType(templateType string) (string, error) {
 		return "default", nil
 	case "thai_demar":
 		return "thai_demar", nil
-	
+
 	default:
 		return "", UnknownTemplateTypeError{Value: templateType}
 	}
@@ -154,7 +153,8 @@ func NormalizeTemplateType(templateType string) (string, error) {
 
 func parsePayslipTemplate(templateType string) (*template.Template, error) {
 	return template.New("payslip-"+templateType).Funcs(template.FuncMap{
-		"default": defaultText,
+		"default":      defaultText,
+		"assetDataURL": assetDataURL,
 	}).ParseFS(
 		templateFS,
 		"templates/payslip/"+templateType+"/template.html",
@@ -281,6 +281,40 @@ func fontDataURL(path string) string {
 	}
 
 	return "data:font/ttf;base64," + base64.StdEncoding.EncodeToString(b)
+}
+
+func assetDataURL(path string) template.URL {
+	value := strings.TrimSpace(path)
+	if value == "" {
+		return ""
+	}
+
+	lower := strings.ToLower(value)
+	if strings.HasPrefix(lower, "data:image/") || strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://") {
+		return template.URL(value)
+	}
+
+	b, err := os.ReadFile(projectPath(value))
+	if err != nil {
+		return ""
+	}
+
+	return template.URL("data:" + imageMediaType(value) + ";base64," + base64.StdEncoding.EncodeToString(b))
+}
+
+func imageMediaType(path string) string {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	case ".svg":
+		return "image/svg+xml"
+	case ".webp":
+		return "image/webp"
+	default:
+		return "image/png"
+	}
 }
 
 func projectPath(path string) string {

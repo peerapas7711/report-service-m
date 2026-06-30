@@ -44,6 +44,12 @@ func TestRenderHTMLThaiDemarPayslip(t *testing.T) {
 	if !strings.Contains(html, `class="page payslip payslip-thai-demar"`) {
 		t.Fatal("thai demar html missing type class")
 	}
+	if !strings.Contains(html, "data:image/png;base64,") {
+		t.Fatal("thai demar html missing embedded logo image")
+	}
+	if strings.Contains(html, "ขอบกระดาษ A4") {
+		t.Fatal("thai demar html should not render A4 edge note")
+	}
 }
 
 func TestRenderHTMLCPPayslip(t *testing.T) {

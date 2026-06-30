@@ -16,16 +16,16 @@
   {{ $texts := .Report.Texts }}
   {{ $taxLeft := index .Report.Sections "tax_deductions_left" }}
   {{ $taxRight := index .Report.Sections "tax_deductions_right" }}
+  {{ $logoSrc := assetDataURL (default .Report.Company.Logo "assets/img/thai delmar.png") }}
   <main class="page payslip {{ .Config.BodyClass }}">
     <header class="slip-header">
       <div class="company-heading">
-        <div class="demar-logo" aria-label="{{ .Report.Company.Name }}">
-          <span class="demar-mark"></span>
-          <div>
-            <h1>{{ .Report.Company.Name }}</h1>
-            <strong>{{ default .Report.Document.ConfidentialTitle "บริษัท ไทยเดมาร์ จำกัด" }}</strong>
-          </div>
-        </div>
+        {{ if $logoSrc }}
+          <img class="company-logo-img" src="{{ $logoSrc }}" alt="{{ .Report.Company.Name }}">
+        {{ else }}
+          <h1 class="company-name-fallback">{{ .Report.Company.Name }}</h1>
+        {{ end }}
+        <strong class="company-title">{{ default .Report.Document.ConfidentialTitle "บริษัท ไทยเดมาร์ จำกัด" }}</strong>
         <p class="company-address">{{ .Report.Document.ConfidentialSubTitle }}</p>
       </div>
       <div class="slip-title">{{ default .Report.Document.Title "ใบแจ้งรายได้ (Pay Slip)" }}</div>
@@ -126,7 +126,6 @@
     <section class="net-row">
       <span>เงินได้สุทธิ</span>
       <strong>{{ .Report.Totals.NetPay }}</strong>
-      {{ with index $texts "a4_note" }}<em>{{ . }}</em>{{ end }}
     </section>
 
     <section class="accumulation-block avoid-break">
