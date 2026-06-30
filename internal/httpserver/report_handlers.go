@@ -36,6 +36,14 @@ func (h reportHandlers) previewPayslipHTML(c *fiber.Ctx) error {
 	return c.SendString(html)
 }
 
+func (h reportHandlers) renderPayslipReport(c *fiber.Ctx) error {
+	return h.renderPayslipReportWithFormat(c, "")
+}
+
+func (h reportHandlers) renderPayslipHTML(c *fiber.Ctx) error {
+	return h.renderPayslipReportWithFormat(c, reportFormatHTML)
+}
+
 func (h reportHandlers) previewPayslipHTMLPDF(c *fiber.Ctx) error {
 	templateType, data, err := h.loadPreviewPayslipHTMLData(c)
 	if err != nil {
@@ -67,6 +75,10 @@ func (h reportHandlers) previewPayslipHTMLPDF(c *fiber.Ctx) error {
 	return sendPDF(c, pdfBytes, filename, disposition)
 }
 
+func (h reportHandlers) renderPayslipHTMLPDF(c *fiber.Ctx) error {
+	return h.renderPayslipReportWithFormat(c, reportFormatPDF)
+}
+
 func (h reportHandlers) loadPreviewPayslipHTMLData(c *fiber.Ctx) (string, payslip_html.Payslip, error) {
 	templateType, err := payslip_html.NormalizeTemplateType(payslipTypeQuery(c))
 	if err != nil {
@@ -79,6 +91,48 @@ func (h reportHandlers) loadPreviewPayslipHTMLData(c *fiber.Ctx) (string, paysli
 	}
 
 	return templateType, data, nil
+}
+
+func (h reportHandlers) renderPayslipReportWithFormat(c *fiber.Ctx, formatOverride string) error {
+	req, err := loadPayslipReportRequest(c)
+	if err != nil {
+		return payslipHTMLErrorJSON(c, err)
+	}
+
+	format, err := payslipReportFormat(req, formatOverride)
+	if err != nil {
+		return payslipHTMLErrorJSON(c, err)
+	}
+
+	html, count, templateType, err := renderPayslipReportHTML(req)
+	if err != nil {
+		return payslipHTMLErrorJSON(c, err)
+	}
+
+	if format == reportFormatHTML {
+		c.Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		c.Set("Content-Type", "text/html; charset=utf-8")
+		return c.SendString(html)
+	}
+
+	pdfBytes, err := payslip_html.GeneratePDFWithOptions(html, payslip_html.PDFOptions{
+		Timeout: payslipHTMLPDFTimeout(count),
+	})
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "generate payslip html pdf failed: "+err.Error())
+	}
+
+	disposition := "inline"
+	if isTruthy(c.Query("download")) {
+		disposition = "attachment"
+	}
+
+	filename := fmt.Sprintf("payslip_%s_%s.pdf", req.CompanyCode, templateType)
+	if count > 1 {
+		filename = fmt.Sprintf("payslip_%s_%s_%04d.pdf", req.CompanyCode, templateType, count)
+	}
+
+	return sendPDF(c, pdfBytes, filename, disposition)
 }
 
 func payslipHTMLErrorJSON(c *fiber.Ctx, err error) error {

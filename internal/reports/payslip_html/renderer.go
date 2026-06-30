@@ -56,7 +56,36 @@ func RenderHTML(templateType string, data Payslip) (string, error) {
 		return "", fmt.Errorf("parse payslip html template %q: %w", selectedType, err)
 	}
 
-	model, err := buildViewModel(selectedType, data)
+	cfg, err := loadTemplateConfig(selectedType)
+	if err != nil {
+		return "", err
+	}
+
+	model, err := buildViewModel(selectedType, cfg, data)
+	if err != nil {
+		return "", err
+	}
+
+	var out bytes.Buffer
+	if err := tmpl.ExecuteTemplate(&out, "template.html", model); err != nil {
+		return "", fmt.Errorf("execute payslip html template %q: %w", selectedType, err)
+	}
+
+	return out.String(), nil
+}
+
+func RenderHTMLWithConfig(cfg TemplateConfig) (string, error) {
+	selectedType, cfg, data, err := normalizeTemplateConfig(cfg)
+	if err != nil {
+		return "", err
+	}
+
+	tmpl, err := parsePayslipTemplate(selectedType)
+	if err != nil {
+		return "", fmt.Errorf("parse payslip html template %q: %w", selectedType, err)
+	}
+
+	model, err := buildViewModel(selectedType, cfg, data)
 	if err != nil {
 		return "", err
 	}
@@ -84,7 +113,12 @@ func RenderHTMLBatch(templateType string, data []Payslip) (string, error) {
 		return "", fmt.Errorf("parse payslip html template %q: %w", selectedType, err)
 	}
 
-	firstModel, err := buildViewModel(selectedType, data[0])
+	cfg, err := loadTemplateConfig(selectedType)
+	if err != nil {
+		return "", err
+	}
+
+	firstModel, err := buildViewModel(selectedType, cfg, data[0])
 	if err != nil {
 		return "", err
 	}
@@ -93,7 +127,45 @@ func RenderHTMLBatch(templateType string, data []Payslip) (string, error) {
 	writeBatchHTMLStart(&out, firstModel)
 
 	for _, item := range data {
-		model, err := buildContentViewModel(selectedType, item)
+		model, err := buildContentViewModel(selectedType, cfg, item)
+		if err != nil {
+			return "", err
+		}
+		if err := tmpl.ExecuteTemplate(&out, "content", model); err != nil {
+			return "", fmt.Errorf("execute payslip html batch template %q: %w", selectedType, err)
+		}
+		out.WriteByte('\n')
+	}
+
+	out.WriteString("</body>\n</html>\n")
+	return out.String(), nil
+}
+
+func RenderHTMLBatchWithConfig(cfg TemplateConfig, data []Payslip) (string, error) {
+	if len(data) == 0 {
+		return "", fmt.Errorf("payslip batch is empty")
+	}
+
+	selectedType, cfg, _, err := normalizeTemplateConfig(cfg)
+	if err != nil {
+		return "", err
+	}
+
+	tmpl, err := parsePayslipTemplate(selectedType)
+	if err != nil {
+		return "", fmt.Errorf("parse payslip html template %q: %w", selectedType, err)
+	}
+
+	firstModel, err := buildViewModel(selectedType, cfg, data[0])
+	if err != nil {
+		return "", err
+	}
+
+	var out bytes.Buffer
+	writeBatchHTMLStart(&out, firstModel)
+
+	for _, item := range data {
+		model, err := buildContentViewModel(selectedType, cfg, item)
 		if err != nil {
 			return "", err
 		}
@@ -108,19 +180,14 @@ func RenderHTMLBatch(templateType string, data []Payslip) (string, error) {
 }
 
 func DefaultPayslip(templateType string) (Payslip, error) {
-	selectedType, err := NormalizeTemplateType(templateType)
-	if err != nil {
-		return Payslip{}, err
-	}
-
-	cfg, err := loadTemplateConfig(selectedType)
+	cfg, err := DefaultTemplateConfig(templateType)
 	if err != nil {
 		return Payslip{}, err
 	}
 
 	data := cfg.SampleData
 	if strings.TrimSpace(data.TemplateID) == "" {
-		data.TemplateID = selectedType
+		data.TemplateID = cfg.Type
 	}
 	if strings.TrimSpace(data.Report.Company.Name) == "" {
 		data.Report.Company.Name = cfg.Name
@@ -128,23 +195,40 @@ func DefaultPayslip(templateType string) (Payslip, error) {
 	return data, nil
 }
 
+func DefaultTemplateConfig(templateType string) (TemplateConfig, error) {
+	selectedType, err := NormalizeTemplateType(templateType)
+	if err != nil {
+		return TemplateConfig{}, err
+	}
+
+	return loadTemplateConfig(selectedType)
+}
+
 func AvailableTemplates() []string {
 	return []string{
 		"default",
 		"thai_demar",
+		"cp",
 	}
 }
 
 func NormalizeTemplateType(templateType string) (string, error) {
 	name := strings.TrimSpace(strings.ToLower(templateType))
+	if name == "" {
+		return "default", nil
+	}
 	name = strings.TrimSuffix(name, filepath.Ext(name))
 	name = strings.ReplaceAll(name, "-", "_")
+	name = filepath.Base(name)
+	name = strings.TrimPrefix(name, "payslip_")
 
 	switch name {
 	case "", "default":
 		return "default", nil
-	case "thai_demar":
+	case "thai_demar", "thai_delmar":
 		return "thai_demar", nil
+	case "cp":
+		return "cp", nil
 
 	default:
 		return "", UnknownTemplateTypeError{Value: templateType}
@@ -152,12 +236,13 @@ func NormalizeTemplateType(templateType string) (string, error) {
 }
 
 func parsePayslipTemplate(templateType string) (*template.Template, error) {
+	assetType := templateAssetType(templateType)
 	return template.New("payslip-"+templateType).Funcs(template.FuncMap{
 		"default":      defaultText,
 		"assetDataURL": assetDataURL,
 	}).ParseFS(
 		templateFS,
-		"templates/payslip/"+templateType+"/template.html",
+		"templates/payslip/"+assetType+"/template.html",
 	)
 }
 
@@ -180,6 +265,27 @@ func loadTemplateConfig(templateType string) (TemplateConfig, error) {
 	return cfg, nil
 }
 
+func normalizeTemplateConfig(cfg TemplateConfig) (string, TemplateConfig, Payslip, error) {
+	templateType := strings.TrimSpace(cfg.Type)
+	if templateType == "" {
+		templateType = strings.TrimSpace(cfg.SampleData.TemplateID)
+	}
+
+	selectedType, err := NormalizeTemplateType(templateType)
+	if err != nil {
+		return "", TemplateConfig{}, Payslip{}, err
+	}
+
+	cfg.Type = selectedType
+	if strings.TrimSpace(cfg.BodyClass) == "" {
+		cfg.BodyClass = "payslip-" + selectedType
+	}
+
+	data := applyTemplateDefaults(cfg, cfg.SampleData)
+
+	return selectedType, cfg, data, nil
+}
+
 func writeBatchHTMLStart(out *bytes.Buffer, model viewModel) {
 	out.WriteString("<!doctype html>\n")
 	out.WriteString("<html lang=\"th\">\n")
@@ -197,19 +303,16 @@ func writeBatchHTMLStart(out *bytes.Buffer, model viewModel) {
 	out.WriteString("\">\n")
 }
 
-func buildViewModel(templateType string, data Payslip) (viewModel, error) {
-	return buildViewModelWithStylesheet(templateType, data, true)
+func buildViewModel(templateType string, cfg TemplateConfig, data Payslip) (viewModel, error) {
+	return buildViewModelWithStylesheet(templateType, cfg, data, true)
 }
 
-func buildContentViewModel(templateType string, data Payslip) (viewModel, error) {
-	return buildViewModelWithStylesheet(templateType, data, false)
+func buildContentViewModel(templateType string, cfg TemplateConfig, data Payslip) (viewModel, error) {
+	return buildViewModelWithStylesheet(templateType, cfg, data, false)
 }
 
-func buildViewModelWithStylesheet(templateType string, data Payslip, includeStylesheet bool) (viewModel, error) {
-	cfg, err := loadTemplateConfig(templateType)
-	if err != nil {
-		return viewModel{}, err
-	}
+func buildViewModelWithStylesheet(templateType string, cfg TemplateConfig, data Payslip, includeStylesheet bool) (viewModel, error) {
+	data = applyTemplateDefaults(cfg, data)
 
 	var css template.CSS
 	if includeStylesheet {
@@ -232,6 +335,16 @@ func buildViewModelWithStylesheet(templateType string, data Payslip, includeStyl
 		HasWorkStats:    len(data.Report.WorkStats) > 0,
 		HasAccumulation: len(data.Report.Accumulations) > 0,
 	}, nil
+}
+
+func applyTemplateDefaults(cfg TemplateConfig, data Payslip) Payslip {
+	if strings.TrimSpace(data.TemplateID) == "" {
+		data.TemplateID = cfg.Type
+	}
+	if strings.TrimSpace(data.Report.Company.Name) == "" {
+		data.Report.Company.Name = cfg.Name
+	}
+	return data
 }
 
 func employeeFields(employee Employee) []LineItem {
@@ -263,7 +376,7 @@ func defaultText(value, fallback string) string {
 }
 
 func stylesheet(templateType string) (string, error) {
-	css, err := templateFS.ReadFile("templates/payslip/" + templateType + "/style.css")
+	css, err := templateFS.ReadFile("templates/payslip/" + templateAssetType(templateType) + "/style.css")
 	if err != nil {
 		return "", err
 	}
@@ -272,6 +385,13 @@ func stylesheet(templateType string) (string, error) {
 	out = strings.ReplaceAll(out, "url('/report-assets/fonts/Sarabun-Regular.ttf')", "url('"+fontDataURL("assets/fonts/Sarabun/Sarabun-Regular.ttf")+"')")
 	out = strings.ReplaceAll(out, "url('/report-assets/fonts/Sarabun-Bold.ttf')", "url('"+fontDataURL("assets/fonts/Sarabun/Sarabun-Bold.ttf")+"')")
 	return out, nil
+}
+
+func templateAssetType(templateType string) string {
+	if templateType == "cp" {
+		return "default"
+	}
+	return templateType
 }
 
 func fontDataURL(path string) string {

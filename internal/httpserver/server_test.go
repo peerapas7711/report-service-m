@@ -100,6 +100,67 @@ func TestReportPayslipHTMLRendersBatchCount(t *testing.T) {
 	}
 }
 
+func TestPostReportPayslipUsesRequestFormatHTML(t *testing.T) {
+	app := New(testConfig())
+
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/report/payslip",
+		strings.NewReader(strings.Replace(actualPayslipReportJSON, `"format":"pdf"`, `"format":"html"`, 1)),
+	)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("post report payslip request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+	if got := resp.Header.Get("Content-Type"); !strings.HasPrefix(got, "text/html") {
+		t.Fatalf("unexpected content type: %s", got)
+	}
+
+	body := readBody(t, resp)
+	if !strings.Contains(body, "บริษัท ตังค์ จำกัด") {
+		t.Fatal("html response missing posted company data")
+	}
+	if !strings.Contains(body, "Mr.Prasert  TEST") {
+		t.Fatal("html response missing first posted employee data")
+	}
+	if !strings.Contains(body, "Ms.Payload  TEST") {
+		t.Fatal("html response missing second posted employee data")
+	}
+	if strings.Count(body, `class="page payslip payslip-thai-demar"`) != 2 {
+		t.Fatal("html response should render one payslip page per employee")
+	}
+	if !strings.Contains(body, "25,324.00") {
+		t.Fatal("html response missing formatted earning amount")
+	}
+}
+
+func TestPostReportPayslipHTMLPathOverridesRequestFormat(t *testing.T) {
+	app := New(testConfig())
+
+	req := httptest.NewRequest(http.MethodPost, "/report/payslip/html", strings.NewReader(actualPayslipReportJSON))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("post report payslip html request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+	if got := resp.Header.Get("Content-Type"); !strings.HasPrefix(got, "text/html") {
+		t.Fatalf("unexpected content type: %s", got)
+	}
+}
+
 func TestReportPayslipHTMLUnknownType(t *testing.T) {
 	app := New(testConfig())
 
@@ -120,6 +181,52 @@ func TestReportPayslipHTMLUnknownType(t *testing.T) {
 	}
 }
 
+func TestPostReportPayslipHTMLUnknownTemplateCode(t *testing.T) {
+	app := New(testConfig())
+
+	body := strings.Replace(actualPayslipReportJSON, `"templateCode":"PAYROLL/PAYSLIP_THAI_DELMAR"`, `"templateCode":"PAYROLL/PAYSLIP_MISSING"`, 1)
+	req := httptest.NewRequest(http.MethodPost, "/report/payslip/html", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("post report payslip html request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	responseBody := readBody(t, resp)
+	if !strings.Contains(responseBody, "available_types") {
+		t.Fatal("error response missing available types")
+	}
+}
+
+func TestPostReportPayslipRejectsUnsupportedFormat(t *testing.T) {
+	app := New(testConfig())
+
+	body := strings.Replace(actualPayslipReportJSON, `"format":"pdf"`, `"format":"xlsx"`, 1)
+	req := httptest.NewRequest(http.MethodPost, "/report/payslip", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("post report payslip request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	responseBody := readBody(t, resp)
+	if !strings.Contains(responseBody, "unsupported report format") {
+		t.Fatal("error response missing unsupported format message")
+	}
+}
+
 func testConfig() config.Config {
 	return config.Config{
 		AppName:     "report-service-test",
@@ -137,3 +244,95 @@ func readBody(t *testing.T, resp *http.Response) string {
 	}
 	return string(body)
 }
+
+const actualPayslipReportJSON = `{
+  "templateCode":"PAYROLL/PAYSLIP_THAI_DELMAR",
+  "format":"pdf",
+  "companyCode":"1",
+  "data":{
+    "company":"บริษัท ตังค์ จำกัด",
+    "companyEn":"Tung Co. , Ltd.",
+    "address":"700/359 ม.6",
+    "tel":"038-743923",
+    "logoUrl":"",
+    "employees":[
+      {
+        "empCode":"0160",
+        "empName":"Mr.Prasert  TEST",
+        "position":"02-16 : UF-ALL / AF-ALL",
+        "department":"MANU - Production Time : Production",
+        "empType":"",
+        "startDate":"28/08/2543",
+        "salary":0,
+        "bankName":"Bank of Ayudhaya Public Company Limited",
+        "bankAccount":"4474029128",
+        "year":"2569",
+        "month":"June",
+        "periodNo":"01",
+        "payDate":"30/Jun/2026",
+        "earnings":[
+          {"name":"OT3","amount":25324},
+          {"name":"Salary","amount":25324}
+        ],
+        "deductions":[],
+        "totalEarnings":50648,
+        "totalDeductions":0,
+        "netPay":22041.6,
+        "ytdIncome":66247.31,
+        "ytdTax":0,
+        "ytdSocialSecurity":1625,
+        "ytdProvidentFund":5064.8,
+        "ytdProvidentFundCompany":3038.88,
+        "taxAllowances":{
+          "expenses":[
+            {"name":"ค่าใช้จ่าย","amount":60000},
+            {"name":"ลดหย่อนผู้มีรายได้","amount":100000}
+          ],
+          "allowances":[
+            {"name":"ประกันสังคม","amount":6125},
+            {"name":"กองทุนสำรองเลี้ยงชีพ","amount":10259.2}
+          ]
+        }
+      },
+      {
+        "empCode":"0187",
+        "empName":"Ms.Payload  TEST",
+        "position":"03-01 : AF-FA / AF-HV",
+        "department":"MANU - Production Time : Production",
+        "empType":"",
+        "startDate":"12/03/2544",
+        "salary":0,
+        "bankName":"Bank of Ayudhaya Public Company Limited",
+        "bankAccount":"4474029144",
+        "year":"2569",
+        "month":"June",
+        "periodNo":"01",
+        "payDate":"30/Jun/2026",
+        "earnings":[
+          {"name":"OT3","amount":23998},
+          {"name":"Salary","amount":23998},
+          {"name":"Position","amount":-3000}
+        ],
+        "deductions":[],
+        "totalEarnings":44996,
+        "totalDeductions":0,
+        "netPay":17848.2,
+        "ytdIncome":61375.08,
+        "ytdTax":0,
+        "ytdSocialSecurity":1625,
+        "ytdProvidentFund":4799.6,
+        "ytdProvidentFundCompany":2879.76,
+        "taxAllowances":{
+          "expenses":[
+            {"name":"ค่าใช้จ่าย","amount":60000},
+            {"name":"ลดหย่อนผู้มีรายได้","amount":98082.34}
+          ],
+          "allowances":[
+            {"name":"ประกันสังคม","amount":6125},
+            {"name":"กองทุนสำรองเลี้ยงชีพ","amount":9198.4}
+          ]
+        }
+      }
+    ]
+  }
+}`

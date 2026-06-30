@@ -13,8 +13,8 @@
 </html>
 {{- end }} {{ define "content" -}} {{ $texts := .Report.Texts }} {{ $taxLeft :=
 index .Report.Sections "tax_deductions_left" }} {{ $taxRight := index
-.Report.Sections "tax_deductions_right" }} {{ $logoSrc := assetDataURL (default
-.Report.Company.Logo "assets/img/thai delmar.png") }}
+.Report.Sections "tax_deductions_right" }} {{ $logoSrc := assetDataURL
+.Report.Company.Logo }}
 <main class="page payslip {{ .Config.BodyClass }}">
   <header class="slip-header">
     <div class="company-heading">

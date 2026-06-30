@@ -9,7 +9,14 @@ curl "http://localhost:8080/report/payslip/html?type=default"
 curl "http://localhost:8080/report/payslip/html?type=thai_demar"
 curl "http://localhost:8080/report/payslip/html?type=cp"
 curl -o payslip.pdf "http://localhost:8080/report/payslip/pdf?type=default&download=1"
+curl -X POST "http://localhost:8080/report/payslip" \
+  -H "Content-Type: application/json" \
+  --data @payload.json
 ```
+
+The POST report route accepts the real report request payload:
+`templateCode`, `companyCode`, `format`, and `data.employees`. `format`
+currently supports `html` and `pdf`.
 
 Supported type values:
 

@@ -1,0 +1,73 @@
+{
+  "type": "cp",
+  "name": "CP Group Payslip",
+  "body_class": "payslip-cp",
+  "sample_data": {
+    "template_id": "cp",
+    "report": {
+      "company": {
+        "name": "CP Group",
+        "logo": ""
+      },
+      "document": {
+        "title": "Payroll Slip",
+        "confidential_title": "CP Group",
+        "confidential_subtitle": "Payroll and employee compensation document"
+      },
+      "payroll": {
+        "period": "June 2026",
+        "pay_date": "30/06/2026",
+        "slip_no": "CP-0001"
+      },
+      "employee": {
+        "name": "CP Demo Employee",
+        "emp_id": "CP1001",
+        "joined_date": "01/01/2024",
+        "division": "Corporate",
+        "department": "Finance",
+        "section": "Payroll",
+        "position": "Payroll Officer",
+        "tax_id": ""
+      },
+      "accumulations": [
+        { "label": "Accumulated Income", "value": "840,000.00" },
+        { "label": "Accumulated Tax", "value": "21,000.00" },
+        { "label": "Accumulated Social Security", "value": "5,250.00" },
+        { "label": "Accumulated Provident Fund", "value": "42,000.00" }
+      ],
+      "earnings": [
+        { "label": "Salary", "value": "90,000.00" },
+        { "label": "Position Allowance", "value": "8,000.00" },
+        { "label": "Meal Allowance", "value": "2,000.00" }
+      ],
+      "deductions": [
+        { "label": "Social Security", "value": "875.00" },
+        { "label": "Tax", "value": "5,500.00" },
+        { "label": "Provident Fund", "value": "4,500.00" }
+      ],
+      "work_stats": [],
+      "totals": {
+        "total_income": "100,000.00",
+        "total_deduct": "10,875.00",
+        "net_pay": "89,125.00",
+        "bank_account_no": "1234567890"
+      },
+      "texts": {
+        "payment_type": "Monthly",
+        "bank_name": "Demo Bank",
+        "period_no": "6",
+        "a4_note": "CP template"
+      },
+      "sections": {
+        "tax_deductions_left": [
+          { "label": "Expense", "value": "100,000.00" },
+          { "label": "Personal Allowance", "value": "60,000.00" }
+        ],
+        "tax_deductions_right": [
+          { "label": "Life Insurance", "value": "0.00" },
+          { "label": "Social Security", "value": "9,000.00" }
+        ]
+      }
+    }
+  }
+}
