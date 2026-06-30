@@ -1,6 +1,6 @@
 # Report Service
 
-Small Go microservice for rendering report PDFs.
+Small Go microservice for payslip HTML rendering and Chrome PDF export.
 
 ## Run
 
@@ -17,46 +17,50 @@ Environment:
 ## HTTP API
 
 - `GET /health`
-- `GET /payslip`
-- `POST /v1/reports/payslip/render`
-- `POST /v1/reports/system-access-permission/render`
+- `GET /ready`
+- `GET /report/payslip/html`
+- `GET /report/payslip/pdf`
 
-Preview routes remain for local checks:
+Payslip type is selected with the `type` query parameter. When omitted,
+Tigersoft is used as the default.
 
-- `GET /preview/payslip`
-- `GET /preview/system-access`
-
-Payslip preview data currently uses a SQL-like mock repository. Existing mock
-aliases still work:
-
-- `GET /report/payslip/html?mock=hopinn`
-- `GET /report/payslip/html?mock=tigersoft`
-- `GET /report/payslip/pdf?mock=1`
-- `GET /report/payslip/pdf?mock=tigersoft&count=1000`
-
-The same repository also accepts SQL-like filters for later DB wiring:
-
-- `company_id`
-- `employee_id`
-- `period_id`
-- `period`
-- `slip_no`
-- `slip_id`
+- `GET /report/payslip/html?type=default` (Tigersoft)
+- `GET /report/payslip/html?type=thai_demar`
+- `GET /report/payslip/html?type=cp`
+- `GET /report/payslip/pdf?type=default&download=1`
 
 Use `count` or `total` on `/report/payslip/html` and `/report/payslip/pdf`
-to generate a local batch from one mock payslip. The batch is capped at 1000
-reports.
+to generate a local batch from the selected type's config data. The batch is
+capped at 1000 reports.
 
-Example:
+## Templates
 
-- `GET /report/payslip/html?company_id=company_hopinn&employee_id=HOP-240117&slip_no=1`
+Payslip templates live under `internal/reports/payslip_html/templates`:
+
+```text
+payslip/
+  default/
+    template.html
+    style.css
+    config.json
+  thai_demar/
+    template.html
+    style.css
+    config.json
+  cp/
+    template.html
+    style.css
+    config.json
+```
+
+Each `config.json` owns the sample data for that type. Each `style.css` is
+embedded into the rendered HTML and inlined with Sarabun font data for PDF
+generation.
 
 ## Structure
 
 - `cmd/report-service`: service entrypoint
 - `internal/config`: environment configuration
-- `internal/datasources`: report data repositories and mock data sources
 - `internal/httpserver`: Fiber routes and handlers
-- `internal/reports`: PDF rendering packages
-- `assets/fonts`: bundled fonts used by the PDF renderers
-- `mock`: local preview payloads
+- `internal/reports/payslip_html`: payslip HTML renderer, PDF export, templates
+- `assets/fonts`: bundled fonts used by the HTML renderer

@@ -1,0 +1,74 @@
+{
+  "type": "default",
+  "name": "Tigersoft Payslip",
+  "body_class": "payslip-tigersoft",
+  "sample_data": {
+    "template_id": "default",
+    "report": {
+      "company": {
+        "name": "Tigersoft",
+        "logo": ""
+      },
+      "document": {
+        "title": "ใบแจ้งเงินเดือน (Payroll Slip)",
+        "confidential_title": "Tigersoft HR Suite",
+        "confidential_subtitle": "Demo payroll document for Tigersoft style\nHuman resource and payroll management"
+      },
+      "payroll": {
+        "period": "June 2026",
+        "pay_date": "30/06/2026",
+        "slip_no": "TS-0001"
+      },
+      "employee": {
+        "name": "Demo Employee",
+        "emp_id": "TS1001",
+        "joined_date": "01/01/2024",
+        "division": "Product",
+        "department": "Engineering",
+        "section": "Platform",
+        "position": "Software Engineer",
+        "tax_id": ""
+      },
+      "accumulations": [
+        { "label": "รายได้สะสม", "value": "720,000.00" },
+        { "label": "ภาษีสะสม", "value": "18,000.00" },
+        { "label": "ประกันสังคมสะสม", "value": "5,250.00" },
+        { "label": "กองทุนสะสม", "value": "30,000.00" },
+        { "label": "กองทุนสมทบ", "value": "30,000.00" }
+      ],
+      "earnings": [
+        { "label": "Base Salary", "value": "80,000.00" },
+        { "label": "Allowance", "value": "7,500.00" },
+        { "label": "Bonus", "value": "12,500.00" }
+      ],
+      "deductions": [
+        { "label": "Social Security", "value": "875.00" },
+        { "label": "Tax", "value": "4,500.00" },
+        { "label": "Provident Fund", "value": "4,000.00" }
+      ],
+      "work_stats": [],
+      "totals": {
+        "total_income": "100,000.00",
+        "total_deduct": "9,375.00",
+        "net_pay": "90,625.00",
+        "bank_account_no": "1234567890"
+      },
+      "texts": {
+        "payment_type": "Monthly",
+        "bank_name": "Demo Bank",
+        "period_no": "6",
+        "a4_note": "Tigersoft template"
+      },
+      "sections": {
+        "tax_deductions_left": [
+          { "label": "ค่าใช้จ่าย", "value": "100,000.00" },
+          { "label": "ลดหย่อนผู้มีรายได้", "value": "60,000.00" }
+        ],
+        "tax_deductions_right": [
+          { "label": "เบี้ยประกันชีวิต", "value": "0.00" },
+          { "label": "ประกันสังคม", "value": "9,000.00" }
+        ]
+      }
+    }
+  }
+}

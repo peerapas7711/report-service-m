@@ -5,8 +5,7 @@ go 1.25.1
 require (
 	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327
 	github.com/chromedp/chromedp v0.14.2
-	github.com/gofiber/fiber/v2 v2.52.11
-	github.com/jung-kurt/gofpdf v1.16.2
+	github.com/gofiber/fiber/v2 v2.52.13
 )
 
 require (

@@ -1,4 +1,4 @@
-package payslip
+package payslip_html
 
 import (
 	"encoding/json"

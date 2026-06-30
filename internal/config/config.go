@@ -10,7 +10,7 @@ import (
 const (
 	defaultAppName     = "report-service"
 	defaultEnvironment = "local"
-	defaultPort        = "8080"
+	defaultPort        = "8083"
 	defaultBodyLimitMB = 10
 )
 
