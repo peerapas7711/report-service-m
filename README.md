@@ -28,7 +28,7 @@ Payslip type is selected with the `type` query parameter. When omitted,
 Tigersoft is used as the default.
 
 - `GET /report/payslip/html?type=default` (Tigersoft)
-- `GET /report/payslip/html?type=thai_demar`
+- `GET /report/payslip/html?type=thai_delmar`
 - `GET /report/payslip/html?type=cp`
 - `GET /report/payslip/pdf?type=default&download=1`
 
@@ -75,6 +75,30 @@ curl -X POST "http://localhost:8083/report/payslip" \
           "ytdSocialSecurity": 1625,
           "ytdProvidentFund": 5064.8,
           "ytdProvidentFundCompany": 3038.88
+        },
+         {
+          "empCode": "0160111",
+          "empName": "Mr.Prasert  TEST",
+          "position": "02-16 : UF-ALL / AF-ALL",
+          "department": "MANU - Production Time : Production",
+          "empType": "",
+          "startDate": "28/08/2543",
+          "bankName": "Bank of Ayudhaya Public Company Limited",
+          "bankAccount": "4474029128",
+          "year": "2569",
+          "month": "June",
+          "periodNo": "01",
+          "payDate": "30/Jun/2026",
+          "earnings": [{ "name": "Salary", "amount": 25324 }],
+          "deductions": [],
+          "totalEarnings": 25324,
+          "totalDeductions": 0,
+          "netPay": 25324,
+          "ytdIncome": 66247.31,
+          "ytdTax": 0,
+          "ytdSocialSecurity": 1625,
+          "ytdProvidentFund": 5064.8,
+          "ytdProvidentFundCompany": 3038.88
         }
       ]
     }
@@ -95,19 +119,16 @@ payslip/
     template.html
     style.css
     config.json
-  thai_demar/
+  thai_delmar/
     template.html
-    style.css
     config.json
   cp/
-    template.html
-    style.css
     config.json
 ```
 
-Each `config.json` owns the sample data for that type. Each `style.css` is
-embedded into the rendered HTML and inlined with Sarabun font data for PDF
-generation.
+Each `config.json` owns the sample data for that type. Templates can either use
+an external `style.css` that is embedded by the renderer, or keep CSS inline in
+`template.html`. `cp` currently reuses the default template assets.
 
 ## Structure
 

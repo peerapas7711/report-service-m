@@ -159,6 +159,9 @@ func buildEmployeePayslip(req payslipReportRequest, templateType, companyName st
 	item := base
 	item.TemplateID = templateType
 	item.Report.Company.Name = companyName
+	item.Report.Company.NameEn = strings.TrimSpace(req.Data.CompanyEn)
+	item.Report.Company.Address = strings.TrimSpace(req.Data.Address)
+	item.Report.Company.Tel = strings.TrimSpace(req.Data.Tel)
 	item.Report.Company.Logo = strings.TrimSpace(req.Data.LogoURL)
 	item.Report.Document.ConfidentialTitle = companyName
 	item.Report.Document.ConfidentialSubTitle = companyContactText(req.Data)

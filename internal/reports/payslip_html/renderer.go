@@ -21,6 +21,7 @@ type TemplateConfig struct {
 	Type       string  `json:"type"`
 	Name       string  `json:"name"`
 	BodyClass  string  `json:"body_class"`
+	DataModel  string  `json:"data_model,omitempty"`
 	SampleData Payslip `json:"sample_data"`
 }
 
@@ -61,7 +62,7 @@ func RenderHTML(templateType string, data Payslip) (string, error) {
 		return "", err
 	}
 
-	model, err := buildViewModel(selectedType, cfg, data)
+	model, err := buildTemplateData(selectedType, cfg, []Payslip{data}, true)
 	if err != nil {
 		return "", err
 	}
@@ -85,7 +86,7 @@ func RenderHTMLWithConfig(cfg TemplateConfig) (string, error) {
 		return "", fmt.Errorf("parse payslip html template %q: %w", selectedType, err)
 	}
 
-	model, err := buildViewModel(selectedType, cfg, data)
+	model, err := buildTemplateData(selectedType, cfg, []Payslip{data}, true)
 	if err != nil {
 		return "", err
 	}
@@ -116,6 +117,19 @@ func RenderHTMLBatch(templateType string, data []Payslip) (string, error) {
 	cfg, err := loadTemplateConfig(selectedType)
 	if err != nil {
 		return "", err
+	}
+
+	if usesDocumentTemplate(cfg) {
+		model, err := buildTemplateData(selectedType, cfg, data, true)
+		if err != nil {
+			return "", err
+		}
+
+		var out bytes.Buffer
+		if err := tmpl.ExecuteTemplate(&out, "template.html", model); err != nil {
+			return "", fmt.Errorf("execute payslip html batch template %q: %w", selectedType, err)
+		}
+		return out.String(), nil
 	}
 
 	firstModel, err := buildViewModel(selectedType, cfg, data[0])
@@ -154,6 +168,19 @@ func RenderHTMLBatchWithConfig(cfg TemplateConfig, data []Payslip) (string, erro
 	tmpl, err := parsePayslipTemplate(selectedType)
 	if err != nil {
 		return "", fmt.Errorf("parse payslip html template %q: %w", selectedType, err)
+	}
+
+	if usesDocumentTemplate(cfg) {
+		model, err := buildTemplateData(selectedType, cfg, data, true)
+		if err != nil {
+			return "", err
+		}
+
+		var out bytes.Buffer
+		if err := tmpl.ExecuteTemplate(&out, "template.html", model); err != nil {
+			return "", fmt.Errorf("execute payslip html batch template %q: %w", selectedType, err)
+		}
+		return out.String(), nil
 	}
 
 	firstModel, err := buildViewModel(selectedType, cfg, data[0])
@@ -207,7 +234,7 @@ func DefaultTemplateConfig(templateType string) (TemplateConfig, error) {
 func AvailableTemplates() []string {
 	return []string{
 		"default",
-		"thai_demar",
+		"thai_delmar",
 		"cp",
 	}
 }
@@ -225,8 +252,8 @@ func NormalizeTemplateType(templateType string) (string, error) {
 	switch name {
 	case "", "default":
 		return "default", nil
-	case "thai_demar", "thai_delmar":
-		return "thai_demar", nil
+	case "thai_delmar":
+		return "thai_delmar", nil
 	case "cp":
 		return "cp", nil
 
@@ -240,6 +267,7 @@ func parsePayslipTemplate(templateType string) (*template.Template, error) {
 	return template.New("payslip-"+templateType).Funcs(template.FuncMap{
 		"default":      defaultText,
 		"assetDataURL": assetDataURL,
+		"money":        moneyTemplateText,
 	}).ParseFS(
 		templateFS,
 		"templates/payslip/"+assetType+"/template.html",
@@ -309,6 +337,24 @@ func buildViewModel(templateType string, cfg TemplateConfig, data Payslip) (view
 
 func buildContentViewModel(templateType string, cfg TemplateConfig, data Payslip) (viewModel, error) {
 	return buildViewModelWithStylesheet(templateType, cfg, data, false)
+}
+
+func buildTemplateData(templateType string, cfg TemplateConfig, data []Payslip, includeStylesheet bool) (any, error) {
+	if len(data) == 0 {
+		return nil, fmt.Errorf("payslip batch is empty")
+	}
+	if usesFlatPayrollModel(cfg) {
+		return buildFlatPayrollTemplateData(cfg, data), nil
+	}
+	return buildViewModelWithStylesheet(templateType, cfg, data[0], includeStylesheet)
+}
+
+func usesDocumentTemplate(cfg TemplateConfig) bool {
+	return usesFlatPayrollModel(cfg)
+}
+
+func usesFlatPayrollModel(cfg TemplateConfig) bool {
+	return strings.EqualFold(strings.TrimSpace(cfg.DataModel), "flat_payroll")
 }
 
 func buildViewModelWithStylesheet(templateType string, cfg TemplateConfig, data Payslip, includeStylesheet bool) (viewModel, error) {

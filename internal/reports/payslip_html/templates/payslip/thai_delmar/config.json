@@ -1,17 +1,21 @@
 {
-  "type": "thai_demar",
-  "name": "Thai Demar Payslip",
-  "body_class": "payslip-thai-demar",
+  "type": "thai_delmar",
+  "name": "Thai Delmar Payslip",
+  "body_class": "payslip-thai-delmar",
+  "data_model": "flat_payroll",
   "sample_data": {
-    "template_id": "thai_demar",
+    "template_id": "thai_delmar",
     "report": {
       "company": {
-        "name": "Thai Demar",
+        "name": "บริษัท ไทยเดลมาร์ จำกัด",
+        "name_en": "Thai Delmar",
+        "address": "88/8 นิคมอุตสาหกรรมเอเชีย (สุวรรณภูมิ) หมู่ที่ 4 ซอยเฉลิมวิช 2 ตำบลคลองสวน อำเภอบางบ่อ จังหวัดสมุทรปราการ 10560",
+        "tel": "โทร. 02-326-1738-47 แฟกซ์ 662-326-1748-9",
         "logo": "assets/img/thai delmar.png"
       },
       "document": {
         "title": "ใบแจ้งรายได้ (Pay Slip)",
-        "confidential_title": "บริษัท ไทยเดมาร์ จำกัด",
+        "confidential_title": "บริษัท ไทยเดลมาร์ จำกัด",
         "confidential_subtitle": "88/8 นิคมอุตสาหกรรมเอเชีย (สุวรรณภูมิ) หมู่ที่ 4 ซอยเฉลิมวิช 2 ตำบลคลองสวน อำเภอบางบ่อ จังหวัดสมุทรปราการ 10560\nโทร. 02-326-1738-47 แฟกซ์ 662-326-1748-9"
       },
       "payroll": {

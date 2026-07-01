@@ -26,8 +26,11 @@ type Report struct {
 }
 
 type Company struct {
-	Name string `json:"name"`
-	Logo string `json:"logo"`
+	Name    string `json:"name"`
+	NameEn  string `json:"name_en,omitempty"`
+	Address string `json:"address,omitempty"`
+	Tel     string `json:"tel,omitempty"`
+	Logo    string `json:"logo"`
 }
 
 type Document struct {

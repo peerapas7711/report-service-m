@@ -51,10 +51,10 @@ func TestReportPayslipHTMLUsesDefaultType(t *testing.T) {
 	}
 }
 
-func TestReportPayslipHTMLUsesThaiDemarTypeParam(t *testing.T) {
+func TestReportPayslipHTMLUsesThaiDelmarTypeParam(t *testing.T) {
 	app := New(testConfig())
 
-	req := httptest.NewRequest(http.MethodGet, "/report/payslip/html?type=thai_demar", nil)
+	req := httptest.NewRequest(http.MethodGet, "/report/payslip/html?type=thai_delmar", nil)
 	resp, err := app.Test(req, -1)
 	if err != nil {
 		t.Fatalf("report payslip html request: %v", err)
@@ -66,11 +66,14 @@ func TestReportPayslipHTMLUsesThaiDemarTypeParam(t *testing.T) {
 	}
 
 	body := readBody(t, resp)
-	if !strings.Contains(body, "Thai Demar") {
-		t.Fatal("html response missing thai demar payslip data")
+	if !strings.Contains(body, "บริษัท ไทยเดลมาร์ จำกัด") {
+		t.Fatal("html response missing thai delmar payslip data")
 	}
-	if !strings.Contains(body, `class="page payslip payslip-thai-demar"`) {
-		t.Fatal("html response missing thai demar payslip type class")
+	if !strings.Contains(body, `class="slip"`) {
+		t.Fatal("html response missing thai delmar slip wrapper")
+	}
+	if !strings.Contains(body, `class="val-box"`) {
+		t.Fatal("html response missing thai delmar inline template value boxes")
 	}
 }
 
@@ -133,7 +136,13 @@ func TestPostReportPayslipUsesRequestFormatHTML(t *testing.T) {
 	if !strings.Contains(body, "Ms.Payload  TEST") {
 		t.Fatal("html response missing second posted employee data")
 	}
-	if strings.Count(body, `class="page payslip payslip-thai-demar"`) != 2 {
+	if !strings.Contains(body, "Tung Co. , Ltd.") {
+		t.Fatal("html response missing posted companyEn data")
+	}
+	if !strings.Contains(body, "700/359 ม.6") {
+		t.Fatal("html response missing posted address data")
+	}
+	if strings.Count(body, `class="slip"`) != 2 {
 		t.Fatal("html response should render one payslip page per employee")
 	}
 	if !strings.Contains(body, "25,324.00") {

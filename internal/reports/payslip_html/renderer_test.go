@@ -27,28 +27,31 @@ func TestRenderHTMLDefaultPayslip(t *testing.T) {
 	}
 }
 
-func TestRenderHTMLThaiDemarPayslip(t *testing.T) {
-	data, err := DefaultPayslip("thai_demar")
+func TestRenderHTMLThaiDelmarPayslip(t *testing.T) {
+	data, err := DefaultPayslip("thai_delmar")
 	if err != nil {
-		t.Fatalf("load thai demar payslip: %v", err)
+		t.Fatalf("load thai delmar payslip: %v", err)
 	}
 
-	html, err := RenderHTML("thai_demar", data)
+	html, err := RenderHTML("thai_delmar", data)
 	if err != nil {
-		t.Fatalf("render thai demar html: %v", err)
+		t.Fatalf("render thai delmar html: %v", err)
 	}
 
-	if !strings.Contains(html, "Thai Demar") {
-		t.Fatal("thai demar html missing company name")
+	if !strings.Contains(html, "บริษัท ไทยเดลมาร์ จำกัด") {
+		t.Fatal("thai delmar html missing company name")
 	}
-	if !strings.Contains(html, `class="page payslip payslip-thai-demar"`) {
-		t.Fatal("thai demar html missing type class")
+	if !strings.Contains(html, `class="slip"`) {
+		t.Fatal("thai delmar html missing slip wrapper")
+	}
+	if !strings.Contains(html, `class="val-box"`) {
+		t.Fatal("thai delmar html missing inline template value boxes")
 	}
 	if !strings.Contains(html, "data:image/png;base64,") {
-		t.Fatal("thai demar html missing embedded logo image")
+		t.Fatal("thai delmar html missing embedded logo image")
 	}
 	if strings.Contains(html, "ขอบกระดาษ A4") {
-		t.Fatal("thai demar html should not render A4 edge note")
+		t.Fatal("thai delmar html should not render A4 edge note")
 	}
 }
 
