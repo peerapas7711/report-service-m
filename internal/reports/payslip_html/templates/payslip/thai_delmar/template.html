@@ -70,7 +70,7 @@
 
       .brand-line {
         display: flex;
-        align-items: center;
+        align-items: last baseline;
         gap: 6px;
         min-height: 11.5mm;
         width: fit-content;
@@ -392,6 +392,7 @@
         <div class="brand-line">
           {{ if $logoUrl }}
           <img src="{{ $logoUrl }}" class="logo-img" alt="{{ $companyEn }}" />
+          <span class="fallback-company">{{ $company }}</span>
           {{ else }}
           <div class="fallback-brand">
             <span>
