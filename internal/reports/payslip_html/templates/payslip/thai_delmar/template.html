@@ -1,4 +1,3 @@
-<!-- [START] [20260630] [Antigravity] [ปรับปรุงโครงสร้างและดีไซน์เทมเพลตใบแจ้งรายได้ให้ตรงตามรูปภาพอ้างอิง: เอา gradient ออก, ใส่กล่องข้อมูลสีเทา/ฟ้าอ่อน (val-box) ครอบค่าต่างๆ ทั้งหมด, จัดแถวข้อมูลพนักงานและตารางรายได้/รายหัก, ปรับปรุงส่วนยอดสะสมและลดหย่อนภาษีให้ตรงกัน] -->
 <!doctype html>
 <html lang="th">
   <head>
@@ -14,206 +13,373 @@
         box-sizing: border-box;
       }
 
+      html,
       body {
-        font-family:
-          "Sarabun", "TH Sarabun New", "Segoe UI", Tahoma, sans-serif;
-        color: #1a1a1a;
-        font-size: 11px;
         margin: 0;
         padding: 0;
-        line-height: 1.3;
+      }
+
+      body {
+        background: #e6e9ed;
+        color: #000;
+        font-family:
+          "Sarabun", "TH Sarabun New", "Noto Sans Thai", Tahoma, sans-serif;
+        font-size: 10.5px;
+        line-height: 1.18;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
       }
 
       .slip {
-        break-after: page;
-        page-break-after: always;
-        break-inside: avoid-page;
-        border: none;
-        padding: 10px;
         background: #fff;
+        break-after: page;
+        min-height: 297mm;
+        overflow: hidden;
+        padding: 6mm 8mm;
+        page-break-after: always;
+        width: 210mm;
       }
+
       .slip:last-child {
         break-after: auto;
         page-break-after: auto;
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
+      @media screen {
+        .slip {
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+          margin: 0 auto;
+        }
       }
 
-      /* ===== Section 1: Header ===== */
-      .header {
-        width: 100%;
-        margin-bottom: 8px;
+      @media print {
+        body {
+          background: #fff;
+        }
       }
-      .header td {
-        vertical-align: middle;
+
+      .slip-header {
+        display: grid;
+        grid-template-columns: 1fr 88mm;
+        align-items: start;
+        gap: 10mm;
       }
-      .company-name-en {
-        font-size: 16px;
+
+      .brand-line {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 11.5mm;
+        width: fit-content;
+      }
+
+      .logo-img {
+        display: block;
+        height: auto;
+        margin-top: 1px;
+        width: 31mm;
+      }
+
+      .fallback-brand {
+        align-items: center;
+        display: flex;
+        gap: 7px;
+      }
+
+      .fallback-name {
+        color: #005baa;
+        display: block;
+        font-size: 17px;
         font-weight: 700;
-        color: #2b5797;
+        line-height: 18px;
       }
-      .company-name-th {
-        font-size: 11px;
+
+      .fallback-company {
+        color: #d71920;
+        display: block;
+        font-size: 7.5px;
         font-weight: 700;
-        color: #e31837;
+        line-height: 9px;
       }
+
       .company-address {
-        font-size: 9.5px;
-        color: #333;
-        margin-top: 2px;
-        line-height: 1.4;
+        width: 100%;
+        margin-top: 2mm;
+        font-size: 9.7px;
+        line-height: 1.35;
       }
-      .title-box {
-        background-color: #bdd7ee;
-        border: 1px solid #8db4e2;
-        padding: 6px 20px;
-        font-size: 12px;
-        font-weight: bold;
-        color: #1a1a1a;
-        display: inline-block;
+
+      .slip-title {
+        align-self: start;
+        background: #d9eaf7;
+        border: 1px solid #9ec3ea;
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 6.4mm;
+        margin-top: 3mm;
+        padding: 0 4mm;
+        text-align: right;
+      }
+
+      .employee-panel {
+        border: 1px solid #bfd7f1;
+        display: grid;
+        gap: 20mm;
+        grid-template-columns: 76mm minmax(0, 1fr);
+        margin-top: 2mm;
+        padding: 1mm 1.5mm;
+      }
+
+      .employee-column {
+        display: grid;
+        gap: 0.9mm;
+      }
+
+      .field-row {
+        align-items: center;
+        display: grid;
+        gap: 2mm;
+        grid-template-columns: 23mm 32mm;
+        min-height: 4.6mm;
+      }
+
+      .employee-column-right .field-row {
+        grid-template-columns: 28mm 32mm;
+      }
+
+      .employee-column-right .period-row {
+        grid-template-columns: 28mm 32mm 8mm 8mm;
+      }
+
+      .field-label,
+      .period-label {
+        white-space: nowrap;
+      }
+
+      .val-box {
+        background: #eaf2fb;
+        border: 1px solid #bfd7f1;
+        display: block;
+        line-height: 3.8mm;
+        min-height: 4.2mm;
+        overflow: hidden;
+        padding: 0 2mm;
+        white-space: nowrap;
+      }
+
+      .val-box-small {
+        padding: 0;
         text-align: center;
       }
 
-      /* ===== Section 2: Employee Info ===== */
-      .emp-info {
-        width: 100%;
-        margin-bottom: 8px;
-        border: none;
+      .amount-box {
+        background: #eaf2fb;
+        border: 1px solid #bfd7f1;
+        display: inline-block;
+        line-height: 3.65mm;
+        min-height: 4.05mm;
+        min-width: 28mm;
+        padding: 0 2mm;
+        text-align: right;
       }
-      .emp-info td {
-        padding: 3px 4px;
-        border: none;
+
+      .number {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .section-title {
+        background: #9fc5e8;
+        border-bottom: 1px solid #7fb0dc;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 5.35mm;
+        margin: 0;
+        text-align: center;
+      }
+
+      .money-grid {
+        border: 1px solid #7fb0dc;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 1.8mm;
+      }
+
+      .money-column + .money-column {
+        border-left: 1px solid #7fb0dc;
+      }
+
+      .money-column {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .money-table {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        width: 100%;
+      }
+
+      .money-table tbody {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+
+      .money-table tfoot {
+        margin-top: auto;
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+
+      .money-table td,
+      .money-table th {
+        border-bottom: 1px solid #e6e6e6;
         font-size: 10px;
+        font-weight: 400;
+        height: 4.35mm;
+        padding: 0.2mm 1.4mm;
         vertical-align: middle;
       }
-      .emp-info .lbl {
-        color: #333;
-        font-weight: normal;
+
+      .money-table td:first-child,
+      .money-table th:first-child {
         text-align: left;
-        white-space: nowrap;
+        width: calc(100% - 32mm);
       }
-      .emp-info .val {
+
+      .money-table td:last-child,
+      .money-table th:last-child {
+        text-align: right;
+        width: 32mm;
+      }
+
+      .money-table tfoot th,
+      .money-table tfoot td {
+        background: #d9eaf7;
+        border-bottom: 0;
+        border-top: 2px solid #6fa8dc;
+        font-size: 10.5px;
+        font-weight: 700;
+        height: 5.45mm;
+      }
+
+      .money-table tfoot .amount-box {
+        background: transparent;
+        border-color: transparent;
+        font-size: 11.3px;
+        font-weight: 700;
+        min-width: 0;
         padding: 0;
       }
 
-      /* Value Box Style (Unified across payslip) */
-      .val-box {
-        background-color: #edf4fc;
-        border: 1px solid #bdd7ee;
-        border-radius: 1px;
-        padding: 3px 6px;
-        font-size: 10px;
-        color: #000;
+      .net-panel {
+        background: #d9eaf7;
+        border: 1px solid #7fb0dc;
+        border-top: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto 34mm;
+        min-height: 7.1mm;
+        padding: 0.8mm 2mm;
+      }
+
+      .net-panel span {
+        align-self: center;
+        font-size: 12.2px;
+        font-weight: 700;
+        grid-column: 2;
+        padding-right: 3mm;
+        white-space: nowrap;
+      }
+
+      .net-panel strong {
+        align-self: center;
+        background: #ffffff;
+        font-size: 12.8px;
+        font-weight: 700;
+        line-height: 4.6mm;
+        padding: 0 2mm;
+        text-align: right;
+      }
+
+      .accumulation-block,
+      .tax-block {
+        border: 1px solid #7fb0dc;
+        margin-top: 2.3mm;
+      }
+
+      .accumulation-grid {
+        display: grid;
+        gap: 1.55mm 2mm;
+        grid-template-columns: 1.04fr 0.92fr 1.08fr 1.52fr 1.54fr;
+        padding: 2mm 1.4mm 1.2mm;
+      }
+
+      .accumulation-grid label {
+        display: grid;
+        gap: 1mm;
+      }
+
+      .accumulation-grid label:nth-child(6) {
+        grid-column: span 2;
+      }
+
+      .accumulation-grid label:nth-child(7) {
+        grid-column: span 3;
+      }
+
+      .accumulation-grid span {
+        line-height: 3.2mm;
+        white-space: nowrap;
+      }
+
+      .accumulation-grid b {
+        background: #eaf2fb;
+        border: 1px solid #bfd7f1;
         display: block;
-        width: 100%;
-        min-height: 22px;
-        line-height: 14px;
-        box-sizing: border-box;
+        font-weight: 400;
+        height: 4.45mm;
+        line-height: 3.85mm;
+        padding: 0 2mm;
+        text-align: right;
       }
 
-      /* ===== Section 3: Earnings / Deductions ===== */
-      .earn-ded {
-        width: 100%;
-        margin-bottom: 6px;
-        border: 1.5px solid #8db4e2;
+      .tax-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
       }
-      .earn-ded-header-td {
-        background: #bdd7ee;
-        color: #1a1a1a;
-        font-weight: 700;
-        font-size: 11px;
-        text-align: center;
-        padding: 4px;
-        width: 50%;
+
+      .tax-grid table + table {
+        border-left: 1px solid #7fb0dc;
       }
-      .inner-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .inner-table td {
-        padding: 2px 4px;
-        border-bottom: 1px solid #edf4fc;
-        font-size: 10px;
+
+      .tax-table td {
+        font-size: 9.9px;
+        height: 4.55mm;
+        padding: 0.2mm 1.4mm;
         vertical-align: middle;
       }
-      .inner-table .col-name {
-        width: 62%;
-        color: #333;
-      }
-      .inner-table .col-amt {
-        width: 38%;
-        padding: 2px 4px;
-      }
-      .inner-table .col-amt .val-box {
-        text-align: right;
-        font-variant-numeric: tabular-nums;
+
+      .tax-table td:first-child {
+        width: calc(100% - 31mm);
       }
 
-      /* ===== Section 5: YTD ===== */
-      .ytd-table {
-        width: 100%;
-        margin-bottom: 6px;
-        border: 1.5px solid #8db4e2;
-        border-collapse: collapse;
-      }
-      .ytd-header {
-        background-color: #8db4e2;
-        color: #1a1a1a;
-        font-weight: bold;
-        text-align: center;
-        font-size: 11px;
-        padding: 4px;
-      }
-      .ytd-lbl-row td {
-        padding: 3px 4px 1px 4px;
-        font-size: 9.5px;
-        color: #333;
-        text-align: left;
-      }
-      .ytd-val-row td {
-        padding: 1px 4px 3px 4px;
+      .tax-table td:last-child {
+        text-align: right;
+        width: 31mm;
       }
 
-      /* ===== Section 6: Tax Allowances ===== */
-      .tax-section {
-        width: 100%;
-        margin-bottom: 4px;
-        border: 1.5px solid #8db4e2;
-        border-collapse: collapse;
+      .tax-table .amount-box {
+        min-width: 25mm;
       }
-      .tax-header {
-        background: #8db4e2;
-        color: #1a1a1a;
-        font-weight: 700;
-        font-size: 11px;
-        text-align: center;
-        padding: 4px;
-        border-bottom: 1.5px solid #8db4e2;
-      }
-      .tax-inner-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .tax-inner-table td {
-        padding: 2px 4px;
-        border: none;
-        font-size: 10px;
-        vertical-align: middle;
-      }
-      .tax-inner-table .col-name {
-        width: 55%;
-        color: #333;
-      }
-      .tax-inner-table .col-amt {
-        width: 45%;
-        padding: 2px 24px 2px 4px;
-      }
-      .tax-inner-table .col-amt .val-box {
-        text-align: right;
-        font-variant-numeric: tabular-nums;
+
+      .avoid-break {
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
     </style>
   </head>
@@ -221,436 +387,206 @@
     {{ $company := .company }} {{ $companyEn := .companyEn }} {{ $address :=
     .address }} {{ $tel := .tel }} {{ $logoUrl := .logoUrl }} {{ range
     .employees }}
-    <div class="slip">
-      <!-- ===== Section 1: Header ===== -->
-      <table class="header">
-        <tr>
-          <td style="padding: 0">
-            <div class="company-name-en">
-              {{ if $logoUrl }}
-              <img
-                src="{{ $logoUrl }}"
-                class="logo-img"
-                alt="logo"
-                style="
-                  max-height: 28px;
-                  vertical-align: middle;
-                  margin-right: 4px;
-                "
-              />
-              {{ else }} {{ if $companyEn }}{{ $companyEn }}{{ else }}Thai
-              Delmar{{ end }} {{ end }}
-            </div>
-            <div class="company-name-th">{{ $company }}</div>
-          </td>
-          <td style="text-align: right; padding: 0; vertical-align: top">
-            <div class="title-box">{{ $.t.title }}</div>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" class="company-address">
-            {{ $address }}<br />
-            {{ $tel }}
-          </td>
-        </tr>
-      </table>
-
-      <!-- ===== Section 2: Employee Info Grid (6 columns) ===== -->
-      <table class="emp-info">
-        <colgroup>
-          <col style="width: 12%" />
-          <col style="width: 20%" />
-          <col style="width: 15%" />
-          <col style="width: 25%" />
-          <col style="width: 10%" />
-          <col style="width: 18%" />
-        </colgroup>
-        <tr>
-          <td class="lbl">{{ $.t.emp_code }}</td>
-          <td class="val"><div class="val-box">{{ .empCode }}</div></td>
-          <td class="lbl">{{ $.t.period }}</td>
-          <td class="val">
-            <div class="val-box">{{ $.t.month_prefix }}{{ .month }}</div>
-          </td>
-          <td class="lbl">{{ $.t.period_no }}</td>
-          <td class="val"><div class="val-box">{{ .periodNo }}</div></td>
-        </tr>
-        <tr>
-          <td class="lbl">{{ $.t.emp_name }}</td>
-          <td class="val"><div class="val-box">{{ .empName }}</div></td>
-          <td class="lbl">{{ $.t.pay_date }}</td>
-          <td class="val"><div class="val-box">{{ .payDate }}</div></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td class="lbl">{{ $.t.position }}</td>
-          <td class="val"><div class="val-box">{{ .position }}</div></td>
-          <td class="lbl">{{ $.t.emp_type }}</td>
-          <td class="val"><div class="val-box">{{ .empType }}</div></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td class="lbl">{{ $.t.department }}</td>
-          <td class="val"><div class="val-box">{{ .department }}</div></td>
-          <td class="lbl">{{ $.t.bank_transfer }}</td>
-          <td class="val">
-            <div class="val-box">
-              {{ if .bankName }}{{ .bankName }}{{ else }}{{ $.t.default_bank
-              }}{{ end }}
-            </div>
-          </td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td class="lbl">{{ $.t.start_date }}</td>
-          <td class="val"><div class="val-box">{{ .startDate }}</div></td>
-          <td class="lbl">{{ $.t.bank_account }}</td>
-          <td class="val"><div class="val-box">{{ .bankAccount }}</div></td>
-          <td></td>
-          <td></td>
-        </tr>
-      </table>
-
-      <!-- ===== Section 3: Earnings + Deductions ===== -->
-      <table class="earn-ded" cellspacing="0" cellpadding="0">
-        <!-- Header row -->
-        <tr>
-          <td
-            class="earn-ded-header-td"
-            style="
-              border-right: 1.5px solid #8db4e2;
-              border-bottom: 1.5px solid #8db4e2;
-            "
-          >
-            {{ $.t.earnings_header }}
-          </td>
-          <td
-            class="earn-ded-header-td"
-            style="border-bottom: 1.5px solid #8db4e2"
-          >
-            {{ $.t.deductions_header }}
-          </td>
-        </tr>
-        <!-- Body row with nested tables -->
-        <tr>
-          <td
-            style="
-              width: 50%;
-              vertical-align: top;
-              border-right: 1.5px solid #8db4e2;
-              padding: 0;
-            "
-          >
-            <table class="inner-table earnings-table">
-              <tbody>
-                {{ range .earnings }}
-                <tr>
-                  <td class="col-name">{{ .name }}</td>
-                  <td class="col-amt">
-                    <div class="val-box">{{ money .amount }}</div>
-                  </td>
-                </tr>
-                {{ end }}
-              </tbody>
-            </table>
-          </td>
-          <td style="width: 50%; vertical-align: top; padding: 0">
-            <table class="inner-table deductions-table">
-              <tbody>
-                {{ range .deductions }}
-                <tr>
-                  <td class="col-name">{{ .name }}</td>
-                  <td class="col-amt">
-                    <div class="val-box">{{ money .amount }}</div>
-                  </td>
-                </tr>
-                {{ end }}
-              </tbody>
-            </table>
-          </td>
-        </tr>
-        <!-- Total row -->
-        <tr>
-          <td
-            style="
-              width: 50%;
-              border-right: 1.5px solid #8db4e2;
-              border-top: 1.5px solid #8db4e2;
-              background-color: #bdd7ee;
-              padding: 4px 6px;
-            "
-          >
-            <table style="width: 100%; border: none">
-              <tr>
-                <td
-                  style="
-                    font-weight: bold;
-                    font-size: 10px;
-                    color: #1a1a1a;
-                    padding: 0;
-                  "
-                >
-                  {{ $.t.total_earnings }}
-                </td>
-                <td
-                  style="
-                    font-weight: bold;
-                    font-size: 10px;
-                    color: #1a1a1a;
-                    text-align: right;
-                    padding: 0;
-                    font-variant-numeric: tabular-nums;
-                  "
-                >
-                  {{ money .totalEarnings }}
-                </td>
-              </tr>
-            </table>
-          </td>
-          <td
-            style="
-              width: 50%;
-              border-top: 1.5px solid #8db4e2;
-              background-color: #bdd7ee;
-              padding: 4px 6px;
-            "
-          >
-            <table style="width: 100%; border: none">
-              <tr>
-                <td
-                  style="
-                    font-weight: bold;
-                    font-size: 10px;
-                    color: #1a1a1a;
-                    padding: 0;
-                  "
-                >
-                  {{ $.t.total_deductions }}
-                </td>
-                <td
-                  style="
-                    font-weight: bold;
-                    font-size: 10px;
-                    color: #1a1a1a;
-                    text-align: right;
-                    padding: 0;
-                    font-variant-numeric: tabular-nums;
-                  "
-                >
-                  {{ money .totalDeductions }}
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-
-      <!-- ===== Section 4: Net Pay & Separation ===== -->
-      <div style="width: 100%; margin-top: 8px; margin-bottom: 8px">
-        <!-- Dashed line divider -->
-        <div
-          style="
-            border-top: 1px dashed #8db4e2;
-            width: 100%;
-            margin-bottom: 6px;
-          "
-        ></div>
-
-        <!-- Net Pay -->
-        <div
-          style="
-            background-color: #edf4fc;
-            border: 1.5px solid #8db4e2;
-            border-radius: 2px;
-            padding: 6px 12px;
-            width: 100%;
-          "
-        >
-          <table style="width: 100%; border: none; margin: 0; padding: 0">
-            <tr>
-              <td style="border: none"></td>
-              <td style="width: 50%; border: none; padding: 0">
-                <table style="width: 100%; border: none; margin: 0; padding: 0">
-                  <tr>
-                    <td
-                      style="
-                        text-align: end;
-                        font-size: 13px;
-                        font-weight: bold;
-                        color: #000;
-                        padding: 0;
-                        border: none;
-                        font-family: inherit;
-                      "
-                    >
-                      {{ $.t.net_pay }}
-                    </td>
-                    <td
-                      style="
-                        text-align: right;
-                        font-size: 13px;
-                        font-weight: bold;
-                        color: #000;
-                        padding: 0;
-                        border: none;
-                        font-variant-numeric: tabular-nums;
-                        font-family: inherit;
-                      "
-                    >
-                      {{ money .netPay }}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
+    <main class="slip">
+      <header class="slip-header">
+        <div class="brand-line">
+          {{ if $logoUrl }}
+          <img src="{{ $logoUrl }}" class="logo-img" alt="{{ $companyEn }}" />
+          {{ else }}
+          <div class="fallback-brand">
+            <span>
+              <span class="fallback-name">{{ $companyEn }}</span>
+              <span class="fallback-company">{{ $company }}</span>
+            </span>
+          </div>
+          {{ end }}
         </div>
+
+        <div class="slip-title">{{ $.t.title }}</div>
+      </header>
+
+      <div class="company-address">
+        {{ $address }} {{ if $tel }}<br />{{ $tel }}{{ end }}
       </div>
 
-      <!-- Small spacer before Section 5 -->
-      <div style="height: 8px"></div>
+      <section class="employee-panel">
+        <div class="employee-column">
+          <div class="field-row">
+            <span class="field-label">{{ $.t.emp_code }}</span>
+            <span class="val-box">{{ .empCode }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.emp_name }}</span>
+            <span class="val-box">{{ .empName }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.position }}</span>
+            <span class="val-box">{{ .position }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.department }}</span>
+            <span class="val-box">{{ .department }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.start_date }}</span>
+            <span class="val-box">{{ .startDate }}</span>
+          </div>
+        </div>
 
-      <!-- ===== Section 5: YTD (ยอดสะสม) ===== -->
-      <table class="ytd-table" cellspacing="0" cellpadding="0">
-        <tr>
-          <td colspan="5" class="ytd-header">{{ $.t.ytd_header }}</td>
-        </tr>
-        <tr class="ytd-lbl-row">
-          <td style="width: 20%">{{ $.t.ytd_income }}</td>
-          <td style="width: 20%">{{ $.t.ytd_tax }}</td>
-          <td style="width: 20%">{{ $.t.ytd_social_security }}</td>
-          <td style="width: 20%">{{ $.t.ytd_provident_fund }}</td>
-          <td style="width: 20%">{{ $.t.ytd_provident_fund_company }}</td>
-        </tr>
-        <tr class="ytd-val-row">
-          <td>
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdIncome }}
-            </div>
-          </td>
-          <td>
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdTax }}
-            </div>
-          </td>
-          <td>
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdSocialSecurity }}
-            </div>
-          </td>
-          <td>
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdProvidentFund }}
-            </div>
-          </td>
-          <td>
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdProvidentFundCompany }}
-            </div>
-          </td>
-        </tr>
-        <tr class="ytd-lbl-row">
-          <td colspan="2">{{ $.t.total_provident_fund_employee }}</td>
-          <td colspan="3">{{ $.t.total_provident_fund_company }}</td>
-        </tr>
-        <tr class="ytd-val-row">
-          <td colspan="2">
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdProvidentFund }}
-            </div>
-          </td>
-          <td colspan="3">
-            <div
-              class="val-box"
-              style="text-align: right; font-variant-numeric: tabular-nums"
-            >
-              {{ money .ytdProvidentFundCompany }}
-            </div>
-          </td>
-        </tr>
-      </table>
+        <div class="employee-column employee-column-right">
+          <div class="field-row period-row">
+            <span class="field-label">{{ $.t.period }}</span>
+            <span class="val-box">{{ $.t.month_prefix }}{{ .month }}</span>
+            <span class="period-label">{{ $.t.period_no }}</span>
+            <span class="val-box val-box-small">{{ .periodNo }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.pay_date }}</span>
+            <span class="val-box">{{ .payDate }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.emp_type }}</span>
+            <span class="val-box">{{ .empType }}</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.bank_transfer }}</span>
+            <span class="val-box">
+              {{ if .bankName }}{{ .bankName }}{{ else }}{{ $.t.default_bank
+              }}{{ end }}
+            </span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">{{ $.t.bank_account }}</span>
+            <span class="val-box">{{ .bankAccount }}</span>
+          </div>
+        </div>
+      </section>
 
-      <!-- ===== Section 6: Tax Allowances ===== -->
+      <section class="money-grid">
+        <div class="money-column">
+          <h2 class="section-title">{{ $.t.earnings_header }}</h2>
+          <table class="money-table">
+            <tbody>
+              {{ range .earnings }}
+              <tr>
+                <td>{{ .name }}</td>
+                <td>
+                  <span class="amount-box number">{{ money .amount }}</span>
+                </td>
+              </tr>
+              {{ end }}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>{{ $.t.total_earnings }}</th>
+                <td>
+                  <span class="amount-box number"
+                    >{{ money .totalEarnings }}</span
+                  >
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="money-column">
+          <h2 class="section-title">{{ $.t.deductions_header }}</h2>
+          <table class="money-table">
+            <tbody>
+              {{ range .deductions }}
+              <tr>
+                <td>{{ .name }}</td>
+                <td>
+                  <span class="amount-box number">{{ money .amount }}</span>
+                </td>
+              </tr>
+              {{ end }}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>{{ $.t.total_deductions }}</th>
+                <td>
+                  <span class="amount-box number"
+                    >{{ money .totalDeductions }}</span
+                  >
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      <section class="net-panel">
+        <span>{{ $.t.net_pay }}</span>
+        <strong class="number">{{ money .netPay }}</strong>
+      </section>
+
+      <section class="accumulation-block avoid-break">
+        <h2 class="section-title">{{ $.t.ytd_header }}</h2>
+        <div class="accumulation-grid">
+          <label>
+            <span>{{ $.t.ytd_income }}</span>
+            <b class="number">{{ money .ytdIncome }}</b>
+          </label>
+          <label>
+            <span>{{ $.t.ytd_tax }}</span>
+            <b class="number">{{ money .ytdTax }}</b>
+          </label>
+          <label>
+            <span>{{ $.t.ytd_social_security }}</span>
+            <b class="number">{{ money .ytdSocialSecurity }}</b>
+          </label>
+          <label>
+            <span>{{ $.t.ytd_provident_fund }}</span>
+            <b class="number">{{ money .ytdProvidentFund }}</b>
+          </label>
+          <label>
+            <span>{{ $.t.ytd_provident_fund_company }}</span>
+            <b class="number">{{ money .ytdProvidentFundCompany }}</b>
+          </label>
+          <label>
+            <span>{{ $.t.total_provident_fund_employee }}</span>
+            <b class="number">{{ money .ytdProvidentFund }}</b>
+          </label>
+          <label>
+            <span>{{ $.t.total_provident_fund_company }}</span>
+            <b class="number">{{ money .ytdProvidentFundCompany }}</b>
+          </label>
+        </div>
+      </section>
+
       {{ if .taxAllowances }}
-      <table class="tax-section" cellspacing="0" cellpadding="0">
-        <tr>
-          <td colspan="2" class="tax-header">
-            {{ $.t.tax_allowances_header }}
-          </td>
-        </tr>
-        <tr>
-          <td
-            style="
-              width: 50%;
-              vertical-align: top;
-              border-right: 1.5px solid #8db4e2;
-              padding: 0;
-            "
-          >
-            <table class="tax-inner-table">
+      <section class="tax-block avoid-break">
+        <h2 class="section-title">{{ $.t.tax_allowances_header }}</h2>
+        <div class="tax-grid">
+          <table class="tax-table">
+            <tbody>
               {{ range .taxAllowances.expenses }}
               <tr>
-                <td class="col-name">{{ .name }}</td>
-                <td class="col-amt">
-                  <div
-                    class="val-box"
-                    style="
-                      text-align: right;
-                      font-variant-numeric: tabular-nums;
-                    "
-                  >
-                    {{ money .amount }}
-                  </div>
+                <td>{{ .name }}</td>
+                <td>
+                  <span class="amount-box number">{{ money .amount }}</span>
                 </td>
               </tr>
               {{ end }}
-            </table>
-          </td>
-          <td style="width: 50%; vertical-align: top; padding: 0">
-            <table class="tax-inner-table">
+            </tbody>
+          </table>
+          <table class="tax-table">
+            <tbody>
               {{ range .taxAllowances.allowances }}
               <tr>
-                <td class="col-name">{{ .name }}</td>
-                <td class="col-amt">
-                  <div
-                    class="val-box"
-                    style="
-                      text-align: right;
-                      font-variant-numeric: tabular-nums;
-                    "
-                  >
-                    {{ money .amount }}
-                  </div>
+                <td>{{ .name }}</td>
+                <td>
+                  <span class="amount-box number">{{ money .amount }}</span>
                 </td>
               </tr>
               {{ end }}
-            </table>
-          </td>
-        </tr>
-      </table>
+            </tbody>
+          </table>
+        </div>
+      </section>
       {{ end }}
-    </div>
+    </main>
     {{ end }}
   </body>
 </html>
