@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"archive/zip"
 	"bytes"
 	"io"
 	"net/http"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/xuri/excelize/v2"
 )
 
 func TestPostReportExcelRendersSingleAfterProcessMock(t *testing.T) {
@@ -35,15 +36,19 @@ func TestPostReportExcelRendersSingleAfterProcessMock(t *testing.T) {
 	}
 
 	xlsx := readBodyBytes(t, resp)
-	sheetXML := xlsxPart(t, xlsx, "xl/worksheets/sheet1.xml")
-	if !strings.Contains(sheetXML, "วันที่") {
+	file := openWorkbook(t, xlsx)
+	defer func() {
+		_ = file.Close()
+	}()
+
+	if got := cellValue(t, file, "AfterProcess", "A1"); got != "วันที่" {
 		t.Fatal("excel response missing single mock header")
 	}
-	if !strings.Contains(sheetXML, "01/06/2569") {
-		t.Fatal("excel response missing first single mock date")
+	if got := cellValue(t, file, "AfterProcess", "A2"); got != "01/06/2569" {
+		t.Fatalf("excel response missing first single mock date: %q", got)
 	}
-	if !strings.Contains(sheetXML, "<t>01</t>") {
-		t.Fatal("excel response should preserve shift code leading zero")
+	if got := cellValue(t, file, "AfterProcess", "B2"); got != "01" {
+		t.Fatalf("excel response should preserve shift code leading zero: %q", got)
 	}
 }
 
@@ -66,17 +71,19 @@ func TestPostReportExcelRendersWrappedMultiAfterProcessMock(t *testing.T) {
 	}
 
 	xlsx := readBodyBytes(t, resp)
-	workbookXML := xlsxPart(t, xlsx, "xl/workbook.xml")
-	if !strings.Contains(workbookXML, `name="All"`) {
+	file := openWorkbook(t, xlsx)
+	defer func() {
+		_ = file.Close()
+	}()
+
+	if got := file.GetSheetList()[0]; got != "All" {
 		t.Fatal("excel response missing wrapped sheet name")
 	}
-
-	sheetXML := xlsxPart(t, xlsx, "xl/worksheets/sheet1.xml")
-	if !strings.Contains(sheetXML, "รหัสพนักงาน") {
-		t.Fatal("excel response missing multi mock employee code header")
+	if got := cellValue(t, file, "All", "A1"); got != "รหัสพนักงาน" {
+		t.Fatalf("excel response missing multi mock employee code header: %q", got)
 	}
-	if !strings.Contains(sheetXML, "เด็กชายเพลไรท์ อิอิ") {
-		t.Fatal("excel response missing multi mock employee name")
+	if got := cellValue(t, file, "All", "B2"); got != "เด็กชายเพลไรท์ อิอิ" {
+		t.Fatalf("excel response missing multi mock employee name: %q", got)
 	}
 }
 
@@ -100,32 +107,22 @@ func readBodyBytes(t *testing.T, resp *http.Response) []byte {
 	return body
 }
 
-func xlsxPart(t *testing.T, data []byte, name string) string {
+func openWorkbook(t *testing.T, data []byte) *excelize.File {
 	t.Helper()
 
-	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	file, err := excelize.OpenReader(bytes.NewReader(data))
 	if err != nil {
-		t.Fatalf("open xlsx zip: %v", err)
+		t.Fatalf("open xlsx workbook: %v", err)
 	}
+	return file
+}
 
-	for _, file := range zr.File {
-		if file.Name != name {
-			continue
-		}
+func cellValue(t *testing.T, file *excelize.File, sheet, cell string) string {
+	t.Helper()
 
-		rc, err := file.Open()
-		if err != nil {
-			t.Fatalf("open xlsx part %s: %v", name, err)
-		}
-		defer rc.Close()
-
-		body, err := io.ReadAll(rc)
-		if err != nil {
-			t.Fatalf("read xlsx part %s: %v", name, err)
-		}
-		return string(body)
+	value, err := file.GetCellValue(sheet, cell)
+	if err != nil {
+		t.Fatalf("read cell %s!%s: %v", sheet, cell, err)
 	}
-
-	t.Fatalf("xlsx part not found: %s", name)
-	return ""
+	return value
 }
