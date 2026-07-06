@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"report-service-m/internal/reports/excel"
 	"report-service-m/internal/reports/payslip_html"
 
 	"github.com/gofiber/fiber/v2"
@@ -77,6 +78,20 @@ func (h reportHandlers) previewPayslipHTMLPDF(c *fiber.Ctx) error {
 
 func (h reportHandlers) renderPayslipHTMLPDF(c *fiber.Ctx) error {
 	return h.renderPayslipReportWithFormat(c, reportFormatPDF)
+}
+
+func (h reportHandlers) renderExcelReport(c *fiber.Ctx) error {
+	req, err := loadExcelReportRequest(c)
+	if err != nil {
+		return err
+	}
+
+	xlsxBytes, err := excel.Render(req.Workbook)
+	if err != nil {
+		return errorJSON(c, fiber.StatusInternalServerError, "generate excel report failed: "+err.Error())
+	}
+
+	return sendXLSX(c, xlsxBytes, req.Filename)
 }
 
 func (h reportHandlers) loadPreviewPayslipHTMLData(c *fiber.Ctx) (string, payslip_html.Payslip, error) {

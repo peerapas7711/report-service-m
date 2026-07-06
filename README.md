@@ -23,6 +23,8 @@ Environment:
 - `POST /report/payslip/html`
 - `GET /report/payslip/pdf`
 - `POST /report/payslip/pdf`
+- `POST /report/excel`
+- `POST /v1/reports/excel`
 
 Payslip type is selected with the `type` query parameter. When omitted,
 Tigersoft is used as the default.
@@ -108,6 +110,41 @@ curl -X POST "http://localhost:8083/report/payslip" \
 Use `count` or `total` on the GET preview routes to generate a local batch from
 the selected type's config data. POST report requests render one payslip per
 entry in `data.employees`.
+
+## Generic Excel API
+
+Use `POST /report/excel` when a caller already has tabular data and wants the
+service to return an `.xlsx` file. This path is intentionally separate from
+payslip HTML/PDF rendering. The same handler is also available at
+`POST /v1/reports/excel`.
+
+The simplest request shape is the same as the current mock files:
+
+```json
+{
+  "headers": ["วันที่", "กะ", "เข้างาน"],
+  "rows": [
+    ["01/06/2569", "01", ""],
+    ["02/06/2569", "01", ""]
+  ]
+}
+```
+
+Optional wrapper fields:
+
+- `filename`: response filename; `.xlsx` is appended when omitted
+- `sheetName` or `name`: worksheet name
+- `data`: wraps the same `headers` + `rows` payload
+- `sheets`: creates multiple worksheets, each with `name`, `headers`, and `rows`
+
+Example:
+
+```sh
+curl -X POST "http://localhost:8083/report/excel?filename=afterprocess" \
+  -H "Content-Type: application/json" \
+  --data @mock/AfterProcess_All_20260630_1707.json \
+  --output afterprocess.xlsx
+```
 
 ## Templates
 

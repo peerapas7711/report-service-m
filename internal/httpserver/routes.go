@@ -17,9 +17,11 @@ func registerRoutes(app *fiber.App, cfg config.Config, handlers reportHandlers) 
 	app.Post("/report/payslip/html", handlers.renderPayslipHTML)
 	app.Get("/report/payslip/pdf", handlers.previewPayslipHTMLPDF)
 	app.Post("/report/payslip/pdf", handlers.renderPayslipHTMLPDF)
+	app.Post("/report/excel", handlers.renderExcelReport)
 
 	v1 := app.Group("/v1")
 	v1.Get("/health", health(cfg))
+	v1.Post("/reports/excel", handlers.renderExcelReport)
 }
 
 func serviceInfo(cfg config.Config) fiber.Handler {
@@ -34,6 +36,8 @@ func serviceInfo(cfg config.Config) fiber.Handler {
 				"POST /report/payslip/html",
 				"GET /report/payslip/pdf",
 				"POST /report/payslip/pdf",
+				"POST /report/excel",
+				"POST /v1/reports/excel",
 			},
 		})
 	}

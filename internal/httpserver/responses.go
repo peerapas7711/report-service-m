@@ -33,6 +33,17 @@ func sendPDF(c *fiber.Ctx, pdfBytes []byte, filename, disposition string) error 
 	return c.Send(pdfBytes)
 }
 
+func sendXLSX(c *fiber.Ctx, xlsxBytes []byte, filename string) error {
+	filename = safeFilename(filename, "report.xlsx")
+
+	c.Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	c.Set("Pragma", "no-cache")
+	c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Set("Content-Disposition", `attachment; filename="`+filename+`"`)
+
+	return c.Send(xlsxBytes)
+}
+
 func safeFilename(filename, fallback string) string {
 	filename = strings.TrimSpace(filename)
 	if filename == "" {
